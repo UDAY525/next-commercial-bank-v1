@@ -13,6 +13,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  phone: {
+    type: String,
+    required: false,
+  },
+  medicalHistory: {
+    type: String,
+    required: false,
+  },
+  bloodGroup: {
+    type: String,
+    required: false,
+    enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+    default: "O-",
+  },
   role: {
     type: String,
     enum: ["admin", "regular"],
