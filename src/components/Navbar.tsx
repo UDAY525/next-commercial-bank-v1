@@ -1,9 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import React from "react";
 import Image from "next/image";
 import { ProfileMenu } from "./ProfileMenu";
-
+import { usePathname } from "next/navigation";
 const Navbar = () => {
+  const pathname = usePathname() ?? "/";
+
+  const isActive = (href: string) => {
+    // exact match OR treat `/posts` as active for `/posts/slug`
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(href + "/");
+  };
   return (
     <div>
       {/* Desktop Navbar */}
@@ -18,8 +27,18 @@ const Navbar = () => {
         </Link>
 
         <div className="flex justify-end items-center gap-x-4">
-          <Link href={"/donations"}>Donate</Link>
-          <Link href={"/request"}>Request</Link>
+          <Link
+            className={`${isActive("/donations") ? "text-red-500" : ""}`}
+            href={"/donations"}
+          >
+            Donate
+          </Link>
+          <Link
+            className={`${isActive("/request") ? "text-red-500" : ""}`}
+            href={"/request"}
+          >
+            Request
+          </Link>
           <ProfileMenu />
         </div>
       </div>
