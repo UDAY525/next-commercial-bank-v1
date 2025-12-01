@@ -94,8 +94,8 @@ export default function Profile() {
   }, [user, form]);
 
   return (
-    <div>
-      <Card className="w-full max-w-xl shadow-2xl mx-auto border-gray-300 mt-20">
+    <div className="px-4 mb-10">
+      <Card className="w-full max-w-xl shadow-2xl mx-auto border-gray-300 mt-10 lg:mt-20">
         <CardHeader>
           <CardTitle>Your Profile Details</CardTitle>
           <CardDescription>
