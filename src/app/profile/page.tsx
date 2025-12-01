@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import useGetUserFromDB from "@/hooks/useGetUserFromDB";
 import type { User as UserType } from "@/models/User";
 import {
@@ -24,59 +23,42 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function Profile() {
   // async user hook (may be null initially)
   const user: UserType | null = useGetUserFromDB();
-  console.log(user);
-  // local controlled form state
-  const [email, setEmail] = useState<string>("");
-  const [name, setName] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [medicalHistory, setMedicalHistory] = useState<string>("");
-  const [bloodGroup, setBloodGroup] = useState<string | undefined>(undefined);
 
-  // whether we've initialized state from `user` already
-  const [initialized, setInitialized] = useState(false);
+  const formSchema = z.object({
+    email: z.string().email("Invalid email"),
+    name: z.string().min(1, "Name is required"),
+    phone: z
+      .string()
+      .regex(/^\d+$/, "Contact must be a number")
+      .min(10, "Contact must be at least 10 digits"),
+    bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]),
+    medicalHistory: z.string().min(2, "Please keep NA if not applicable"),
+  });
+  type FormValues = z.infer<typeof formSchema>;
 
-  // initialize local state ONCE when user becomes available
-  useEffect(() => {
-    if (!initialized && user) {
-      setEmail(user.email ?? "");
-      setName(user.name ?? "");
-      setPhone(user.phone ?? "");
-      setMedicalHistory(user.medicalHistory ?? "");
-      setBloodGroup(user.bloodGroup ?? undefined);
-      setInitialized(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, initialized]);
-
-  // optional: form submit state
-  const [saving, setSaving] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    // build payload
-    const payload = {
-      email, // usually read-only but useful to log
-      name,
-      phone,
-      medicalHistory,
-      bloodGroup,
-    };
-
-    // log to console first (as you requested)
-    console.log("Profile submit payload:", payload);
-
-    // If you want to send to your server:
+  async function onSubmit(values: FormValues) {
+    // Do something with the form values.
+    // ✅ This will be type-safe and validated.
     try {
-      setSaving(true);
       const res = await fetch("/api/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(values),
       });
 
       const json = await res.json();
@@ -84,10 +66,32 @@ export default function Profile() {
     } catch (err) {
       console.error("Network error saving profile:", err);
       alert("Network error");
-    } finally {
-      setSaving(false);
     }
+    console.log(values);
   }
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: user?.email ?? "", // ensure string, not undefined
+      name: user?.name ?? "", // ensure string, not undefined
+      phone: user?.phone ?? "",
+      bloodGroup: user?.bloodGroup ?? "O-",
+      medicalHistory: user?.medicalHistory ?? "NA", // fixed (was using bloodGroup before)
+    },
+  });
+
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        email: user.email ?? "",
+        name: user.name ?? "",
+        phone: user.phone ?? "",
+        bloodGroup: user.bloodGroup ?? "O-",
+        medicalHistory: user.medicalHistory ?? "NA",
+      });
+    }
+  }, [user, form]);
 
   return (
     <div>
@@ -101,81 +105,117 @@ export default function Profile() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} disabled />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  required
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label>Blood Group</Label>
-                <Select
-                  value={bloodGroup ?? ""}
-                  onValueChange={(val) => setBloodGroup(val || undefined)}
+          <Form {...form}>
+            <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="email" {...field} disabled />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="phone" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="bloodGroup"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Blood Group</FormLabel>
+                    <FormControl>
+                      <Select {...field}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a blood group" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white opacity-100">
+                          <SelectGroup>
+                            <SelectLabel>Select your blood group</SelectLabel>
+                            {[
+                              "A+",
+                              "A-",
+                              "B+",
+                              "B-",
+                              "AB+",
+                              "AB-",
+                              "O+",
+                              "O-",
+                            ].map((group) => (
+                              <SelectItem key={group} value={group}>
+                                {group}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="medicalHistory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Medical History</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        id="medicalHistory"
+                        {...field}
+                        placeholder="Please keep NA, if not applicable for you."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="mt-6">
+                <Button
+                  type="submit"
+                  disabled={form.formState.isSubmitting}
+                  className={`px-4 py-2 rounded w-full text-white bg-gray-500 ${
+                    form.formState.isSubmitting
+                      ? "opacity-60 cursor-not-allowed"
+                      : " hover:bg-gray-700"
+                  }`}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a blood group" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white opacity-100">
-                    <SelectGroup>
-                      <SelectLabel>Select your blood group</SelectLabel>
-                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
-                        (group) => (
-                          <SelectItem key={group} value={group}>
-                            {group}
-                          </SelectItem>
-                        )
-                      )}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                  {form.formState.isSubmitting
+                    ? "Submitting..."
+                    : "Complete Profile"}
+                </Button>
               </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="medicalHistory">Medical History</Label>
-                <Textarea
-                  id="medicalHistory"
-                  value={medicalHistory}
-                  required
-                  onChange={(e) => setMedicalHistory(e.target.value)}
-                  placeholder="Type your message here."
-                />
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <Button
-                type="submit"
-                className="w-full bg-gray-500 text-white font-semibold"
-                disabled={saving || !initialized}
-              >
-                {saving ? "Saving..." : "Complete Profile"}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </Form>
         </CardContent>
 
         <CardFooter className="flex-col gap-2" />

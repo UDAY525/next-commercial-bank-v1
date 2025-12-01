@@ -19,28 +19,6 @@ import useGetUserFromDB from "@/hooks/useGetUserFromDB";
 export function ProfileMenu() {
   const { data: session, status } = useSession();
 
-  // const [user, setUser] = useState<UserType | null>(null);
-
-  // // Update imgSrc when session changes (handles async arrival)
-  // useEffect(() => {
-  //   // 1. Define the async function inside
-  //   const fetchData = async () => {
-  //     try {
-  //       const resp = await fetch("/api/user");
-
-  //       if (!resp.ok) throw new Error("Network response was not ok");
-
-  //       const data = await resp.json();
-  //       setUser(data?.user);
-  //     } catch (error) {
-  //       console.error("Failed to fetch user:", error);
-  //     }
-  //   };
-
-  //   // 2. Call the function immediately
-  //   fetchData();
-  // }, [session]); // Removed imgSrc from dependencies
-
   const user = useGetUserFromDB();
 
   // Show nothing (or a placeholder) if not signed in
