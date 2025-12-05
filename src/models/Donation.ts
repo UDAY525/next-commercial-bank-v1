@@ -2,15 +2,20 @@ import mongoose, { InferSchemaType } from "mongoose";
 
 const donationSchema = new mongoose.Schema({
   donarId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   name: {
     type: String,
     required: true,
   },
+  phone: {
+    type: String,
+    required: false,
+  },
   donatedBloodGroup: {
-    name: String,
+    type: String,
     enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
     required: true,
   },

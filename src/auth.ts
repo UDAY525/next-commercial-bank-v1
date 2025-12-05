@@ -31,7 +31,7 @@ export const {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, profile }) {
       try {
         await connectDB();
         const email = profile?.email || user?.email;
