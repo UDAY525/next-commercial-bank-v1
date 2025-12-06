@@ -56,7 +56,10 @@ export function ProfileMenu() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56 bg-white opacity-100" align="end">
+      <DropdownMenuContent
+        className="w-56 bg-gray-300/5 border-gray-200 backdrop-blur-xl"
+        align="end"
+      >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
 
         <div className="px-2 py-2">

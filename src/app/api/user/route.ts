@@ -3,18 +3,21 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth"; // your server-side auth export
 import connectDB from "@/connectDB";
 import User from "@/models/User";
-import type { User as UserType } from "@/models/User";
 
 export async function GET() {
   try {
     const session = await auth();
+
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized in user" },
+        { status: 401 }
+      );
     }
 
     await connectDB();
 
-    const user = await User.findById(session.user.id)
+    const user = await User.findById(session?.user?.id)
       .lean()
       .select(
         "name email image phone address role profileImage bloodGroup medicalHistory"
@@ -66,7 +69,7 @@ export async function POST(req: Request) {
     await connectDB();
 
     // Update only whitelisted fields
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, string | string[] | undefined> = {};
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
     if (address !== undefined) updateData.address = address;
@@ -86,8 +89,6 @@ export async function POST(req: Request) {
     ).select(
       "name email image phone address role profileImage bloodGroup medicalHistory"
     );
-
-    console.log("user", user);
 
     return NextResponse.json({ user: updatedUser, success: true });
   } catch (err) {

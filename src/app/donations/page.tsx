@@ -1,18 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+// label not used in this form
 import useGetUserFromDB from "@/hooks/useGetUserFromDB";
 import type { User as UserType } from "@/models/User";
+// donation model type not used directly here
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
@@ -22,112 +35,100 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-export default function Profile() {
-  // async user hook (may be null initially)
+import { useEffect } from "react";
+
+export default function Donation() {
   const user: UserType | null = useGetUserFromDB();
 
+  // FormValues will be inferred from the zod schema below when used in onSubmit
+
   const formSchema = z.object({
-    email: z.string().email("Invalid email"),
-    name: z.string().min(1, "Name is required"),
+    name: z.string().min(2, {
+      message: "Username must be at least 2 characters.",
+    }),
     phone: z
       .string()
       .regex(/^\d+$/, "Contact must be a number")
       .min(10, "Contact must be at least 10 digits"),
-    bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]),
-    medicalHistory: z.string().min(2, "Please keep NA if not applicable"),
+    donatedBloodGroup: z.enum([
+      "A+",
+      "A-",
+      "B+",
+      "B-",
+      "AB+",
+      "AB-",
+      "O+",
+      "O-",
+    ]),
+    quantity: z.coerce
+      .number()
+      .int("Quantity must be a whole number")
+      .min(1, "Quantity must be at least 1")
+      .max(100, "Quantity cannot exceed 100"),
   });
-  type FormValues = z.infer<typeof formSchema>;
 
-  async function onSubmit(values: FormValues) {
+  // 1. Define your form.
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: user?.name ?? "",
+      phone: user?.phone ?? "",
+      donatedBloodGroup: user?.bloodGroup ?? "O-",
+      quantity: undefined,
+    },
+  });
+
+  // 2. Define a submit handler.
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
+    console.log(values);
     try {
-      const res = await fetch("/api/user", {
+      const res = await fetch("/api/donation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-
       const json = await res.json();
       console.log("Updated:", json);
-    } catch (err) {
-      console.error("Network error saving profile:", err);
+    } catch (error) {
+      console.error("Network error saving profile:", error);
       alert("Network error");
     }
-    console.log(values);
   }
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: user?.email ?? "", // ensure string, not undefined
-      name: user?.name ?? "", // ensure string, not undefined
-      phone: user?.phone ?? "",
-      bloodGroup: user?.bloodGroup ?? "O-",
-      medicalHistory: user?.medicalHistory ?? "NA", // fixed (was using bloodGroup before)
-    },
-  });
 
   useEffect(() => {
     if (user) {
       form.reset({
-        email: user.email ?? "",
-        name: user.name ?? "",
-        phone: user.phone ?? "",
-        bloodGroup: user.bloodGroup ?? "O-",
-        medicalHistory: user.medicalHistory ?? "NA",
+        name: user?.name ?? "",
+        phone: user?.phone ?? "",
+        donatedBloodGroup: user?.bloodGroup ?? "O-",
+        quantity: undefined,
       });
     }
   }, [user, form]);
-  console.log(user);
+
   return (
     <div className="px-4 mb-10">
       <Card className="w-full max-w-xl shadow-2xl mx-auto border-gray-300 mt-10 lg:mt-20">
         <CardHeader>
-          <CardTitle>Your Profile Details</CardTitle>
+          <CardTitle>Login to your account</CardTitle>
           <CardDescription>
-            Please complete your profile to commit transactions and help others
-            notify you.
+            Enter your email below to login to your account
           </CardDescription>
         </CardHeader>
-
         <CardContent>
           <Form {...form}>
-            <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="email" {...field} disabled />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="name" {...field} />
+                      <Input placeholder="shadcn" {...field} disabled />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -140,7 +141,7 @@ export default function Profile() {
                   <FormItem>
                     <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input placeholder="phone" {...field} />
+                      <Input placeholder="Phone" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,18 +149,18 @@ export default function Profile() {
               />
               <FormField
                 control={form.control}
-                name="bloodGroup"
+                name="donatedBloodGroup"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Blood Group</FormLabel>
+                    <FormLabel>Donating Blood Group</FormLabel>
                     <FormControl>
                       <Select {...field}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a blood group" />
                         </SelectTrigger>
-                        <SelectContent className="bg-white opacity-100">
+                        <SelectContent className="bg-white">
                           <SelectGroup>
-                            <SelectLabel>Select your blood group</SelectLabel>
+                            <SelectLabel>Select blood group</SelectLabel>
                             {[
                               "A+",
                               "A-",
@@ -184,41 +185,38 @@ export default function Profile() {
               />
               <FormField
                 control={form.control}
-                name="medicalHistory"
+                name="quantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Medical History</FormLabel>
+                    <FormLabel>Quantity</FormLabel>
                     <FormControl>
-                      <Textarea
-                        id="medicalHistory"
+                      <Input
+                        type="number"
+                        placeholder="Quantity"
+                        min="1"
+                        max="100"
+                        step="1"
                         {...field}
-                        placeholder="Please keep NA, if not applicable for you."
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? undefined : Number(val));
+                        }}
+                        value={(field.value as number | undefined) ?? ""}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <div className="mt-6">
-                <Button
-                  type="submit"
-                  disabled={form.formState.isSubmitting}
-                  className={`px-4 py-2 rounded w-full text-white bg-gray-500 ${
-                    form.formState.isSubmitting
-                      ? "opacity-60 cursor-not-allowed"
-                      : " hover:bg-gray-700"
-                  }`}
-                >
-                  {form.formState.isSubmitting
-                    ? "Submitting..."
-                    : "Complete Profile"}
-                </Button>
-              </div>
+              <Button
+                className="w-full px-4 py-2 border bg-green-800 hover:bg-green-900 text-white"
+                type="submit"
+              >
+                Submit
+              </Button>
             </form>
           </Form>
         </CardContent>
-
-        <CardFooter className="flex-col gap-2" />
       </Card>
     </div>
   );
