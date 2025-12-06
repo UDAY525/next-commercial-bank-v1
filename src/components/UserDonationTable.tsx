@@ -56,7 +56,6 @@ async function DonationTableContent() {
       <TableCaption>Your recent donations.</TableCaption>
       <TableHeader className="bg-gray-300 font-semibold">
         <TableRow>
-          <TableHead className="w-[100px]">S.Nxo</TableHead>
           <TableHead>Blood Group</TableHead>
           <TableHead>Quantity</TableHead>
           <TableHead className="text-right">Date</TableHead>
@@ -65,7 +64,6 @@ async function DonationTableContent() {
       <TableBody>
         {donations.map((donation, index) => (
           <TableRow key={donation._id.toString()}>
-            <TableCell className="font-medium">{index + 1}</TableCell>
             <TableCell>{donation.donatedBloodGroup}</TableCell>
             <TableCell>{donation.quantity} ml</TableCell>
             <TableCell className="text-right">
