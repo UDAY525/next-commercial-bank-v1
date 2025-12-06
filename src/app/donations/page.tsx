@@ -155,7 +155,7 @@ export default function Donation() {
                   <FormItem>
                     <FormLabel>Donating Blood Group</FormLabel>
                     <FormControl>
-                      <Select {...field}>
+                      <Select value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a blood group" />
                         </SelectTrigger>

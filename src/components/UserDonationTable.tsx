@@ -1,18 +1,10 @@
 "use server";
 
 import React, { Suspense } from "react";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getUserId } from "@/lib/session";
 import connectDB from "@/connectDB";
 import Donation from "@/models/Donation";
+import DonationDataTable from "./DonationDataTable";
 
 interface DonationType {
   _id: string;
@@ -51,31 +43,16 @@ async function DonationTableContent() {
     );
   }
 
-  return (
-    <Table className="border mx-auto">
-      <TableCaption>Your recent donations.</TableCaption>
-      <TableHeader className="bg-gray-300 font-semibold">
-        <TableRow>
-          <TableHead>Blood Group</TableHead>
-          <TableHead>Quantity</TableHead>
-          <TableHead className="text-right">Date</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {donations.map((donation, index) => (
-          <TableRow key={donation._id.toString()}>
-            <TableCell>{donation.donatedBloodGroup}</TableCell>
-            <TableCell>{donation.quantity} ml</TableCell>
-            <TableCell className="text-right">
-              {donation.donatedAt
-                ? new Date(donation.donatedAt).toLocaleDateString()
-                : "N/A"}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+  // Serialize Mongoose ObjectIds and dates to plain objects
+  const serializedDonations = donations.map((donation) => ({
+    _id: donation._id.toString(),
+    name: donation.name,
+    donatedBloodGroup: donation.donatedBloodGroup,
+    quantity: donation.quantity,
+    donatedAt: donation.donatedAt?.toString() || null,
+  }));
+
+  return <DonationDataTable donations={serializedDonations} />;
 }
 
 function DonationTableFallback() {
