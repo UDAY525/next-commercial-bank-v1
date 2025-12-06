@@ -27,12 +27,15 @@ const donationSchema = new mongoose.Schema({
   },
   donatedAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
     required: true,
   },
 });
 
-export default mongoose.models.DonationsSchema ||
-  mongoose.model("Donations", donationSchema);
+const DonationModel =
+  (mongoose.models && mongoose.models.Donation) ||
+  mongoose.model("Donation", donationSchema);
+
+export default DonationModel;
 
 export type Donation = InferSchemaType<typeof donationSchema>;

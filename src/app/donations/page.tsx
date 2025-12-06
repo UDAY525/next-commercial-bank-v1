@@ -92,6 +92,7 @@ export default function Donation() {
       });
       const json = await res.json();
       console.log("Updated:", json);
+      form.reset();
     } catch (error) {
       console.error("Network error saving profile:", error);
       alert("Network error");

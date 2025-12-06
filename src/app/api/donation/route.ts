@@ -29,7 +29,10 @@ export async function GET() {
 
   const allDonationsByUser = await Donation.find({
     donarId: userId,
-  }).lean();
+  })
+    .lean()
+    .select("donatedBloodGroup donatedAt quantity name phone")
+    .exec();
 
   if (!allDonationsByUser || allDonationsByUser.length === 0) {
     return NextResponse.json({ allDonationsByUser: [] });
