@@ -61,7 +61,11 @@ export default function Donation() {
       "O+",
       "O-",
     ]),
-    quantity: z.coerce.number({ message: "Please enter a valid quantity" }),
+    quantity: z.coerce
+      .number()
+      .int("Quantity must be a whole number")
+      .min(1, "Quantity must be at least 1")
+      .max(100, "Quantity cannot exceed 100"),
   });
 
   // 1. Define your form.
@@ -189,8 +193,15 @@ export default function Donation() {
                       <Input
                         type="number"
                         placeholder="Quantity"
+                        min="1"
+                        max="100"
+                        step="1"
                         {...field}
-                        value={field.value as number | undefined}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? undefined : Number(val));
+                        }}
+                        value={(field.value as number | undefined) ?? ""}
                       />
                     </FormControl>
                     <FormMessage />

@@ -22,10 +22,17 @@ const donationSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     required: true,
+    min: [1, "Quantity must be at least 1"],
+    max: [100, "Quantity cannot exceed 100"],
+  },
+  donatedAt: {
+    type: Date,
+    default: Date.now(),
+    required: true,
   },
 });
 
 export default mongoose.models.DonationsSchema ||
-  mongoose.model("DonationsSchema", donationSchema);
+  mongoose.model("Donations", donationSchema);
 
 export type Donation = InferSchemaType<typeof donationSchema>;
