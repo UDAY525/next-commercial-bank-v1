@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/connectDB";
 import Donation from "@/models/Donation";
-import { auth } from "@/auth";
 import { z } from "zod";
+import { getUserId } from "@/lib/session";
 
 // Validation schema for donation
 const donationSchema = z.object({
@@ -16,15 +16,35 @@ const donationSchema = z.object({
     .max(100, "Quantity cannot exceed 100"),
 });
 
+export async function GET() {
+  await connectDB();
+  const userId = await getUserId();
+
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Unauthorized - no session found" },
+      { status: 401 }
+    );
+  }
+
+  const allDonationsByUser = await Donation.find({
+    donarId: userId,
+  }).lean();
+
+  if (!allDonationsByUser || allDonationsByUser.length === 0) {
+    return NextResponse.json({ allDonationsByUser: [] });
+  }
+
+  return NextResponse.json({ allDonationsByUser });
+}
+
 export async function POST(req: NextRequest) {
   await connectDB();
 
   const body = await req.json();
+  const userId = await getUserId();
 
-  // Get the current user session directly from NextAuth
-  const session = await auth();
-
-  if (!session?.user?.id) {
+  if (!userId) {
     return NextResponse.json(
       { error: "Unauthorized - no session found" },
       { status: 401 }
@@ -44,11 +64,10 @@ export async function POST(req: NextRequest) {
   }
 
   const { name, phone, donatedBloodGroup, quantity } = validation.data;
-  const donarId = session.user.id;
 
   try {
     const donation = await Donation.create({
-      donarId,
+      donarId: userId,
       name,
       phone,
       donatedBloodGroup,

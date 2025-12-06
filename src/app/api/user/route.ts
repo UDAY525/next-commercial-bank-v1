@@ -1,14 +1,14 @@
 // app/api/me/route.ts
 import { NextResponse } from "next/server";
-import { auth } from "@/auth"; // your server-side auth export
 import connectDB from "@/connectDB";
 import User from "@/models/User";
+import { getUserId } from "@/lib/session";
 
 export async function GET() {
   try {
-    const session = await auth();
+    const userId = await getUserId();
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized in user" },
         { status: 401 }
@@ -17,7 +17,7 @@ export async function GET() {
 
     await connectDB();
 
-    const user = await User.findById(session?.user?.id)
+    const user = await User.findById(userId)
       .lean()
       .select(
         "name email image phone address role profileImage bloodGroup medicalHistory"
@@ -37,8 +37,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userId = await getUserId();
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -78,15 +79,11 @@ export async function POST(req: Request) {
     if (bloodGroup !== undefined) updateData.bloodGroup = bloodGroup;
     if (profileImage !== undefined) updateData.profileImage = profileImage;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
-      updateData,
-      {
-        new: true,
-        runValidators: true,
-        lean: true,
-      }
-    ).select(
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+      lean: true,
+    }).select(
       "name email image phone address role profileImage bloodGroup medicalHistory"
     );
 
