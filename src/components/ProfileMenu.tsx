@@ -16,7 +16,7 @@ import type { User as UserType } from "@/models/User";
 import Link from "next/link";
 import useGetUserFromDB from "@/hooks/useGetUserFromDB";
 import { signOut, signIn } from "next-auth/react";
-import { LogOut, LockKeyholeOpen } from "lucide-react";
+import { LogOut, LockKeyholeOpen, ShieldUser } from "lucide-react";
 
 export function ProfileMenu() {
   const { data: session, status } = useSession();
@@ -115,7 +115,7 @@ export function ProfileMenu() {
           </div>
         </div>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gray-300/50" />
         <DropdownMenuItem asChild>
           <a href="/profile">Profile</a>
         </DropdownMenuItem>
@@ -124,7 +124,16 @@ export function ProfileMenu() {
           <a href="/requests">Requests</a>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gray-400/50" />
+        <DropdownMenuItem asChild>
+          <Link
+            className="ring-0 outline-0 text-green-600 font-semibold w-full focus-visible:none no-ring"
+            href={"/admin"}
+          >
+            <ShieldUser className="!w-6 !h-6" />
+            Admin
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Button
             variant={"secondary"}

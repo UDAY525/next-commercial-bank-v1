@@ -137,7 +137,7 @@ export default function Navbar() {
         <div
           className={clsx(
             "md:hidden transform-gpu transition-all bg-gray-50 relative w-full duration-300 ease-in-out overflow-hidden",
-            open ? "h-screen opacity-100 left-0" : " left-[100vw]"
+            open ? "h-screen opacity-100" : "hidden"
           )}
         >
           <div className="px-4 pt-2 pb-6 flex flex-col space-y-1">
