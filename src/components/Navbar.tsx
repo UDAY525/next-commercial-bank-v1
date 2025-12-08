@@ -95,7 +95,7 @@ export default function Navbar() {
             </nav>
 
             {/* Mobile controls */}
-            <div className="flex items-center md:hidden">
+            <div className="flex items-center md:hidden gap-x-2">
               <ProfileMenu />
               <button
                 onClick={() => setOpen((s) => !s)}
