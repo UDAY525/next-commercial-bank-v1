@@ -88,23 +88,17 @@ export function ProfileMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="default" className="p-1 bg-transparent no-ring">
-          <Avatar>
-            {user?.profileImage ? (
-              <img
-                src={user?.profileImage?.toString()}
-                alt={session.user.name ?? "avatar"}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <AvatarFallback>CN</AvatarFallback>
-            )}
-          </Avatar>
+          <img
+            src={user?.profileImage?.toString()}
+            alt={session.user.name ?? "avatar"}
+            className="h-8 w-8 rounded-full object-cover"
+          />
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         className="w-56 bg-gray-300/5 border-gray-200 backdrop-blur-xl"
-        align="end"
+        align="center"
       >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
 

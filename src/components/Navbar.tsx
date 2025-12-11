@@ -52,7 +52,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 overflow-x-hidden">
+    <header className="sticky top-0 z-50 overflow-hidden">
       <div
         className="backdrop-blur-sm bg-trnaparent/70 dark:bg-slate-900/60 border-b border-white/10
                    shadow-sm"
