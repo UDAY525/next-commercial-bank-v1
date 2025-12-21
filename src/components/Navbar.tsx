@@ -51,6 +51,8 @@ export default function Navbar() {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
+  if (pathname.includes("admin")) return null;
+
   return (
     <header className="sticky top-0 z-50 overflow-hidden">
       <div
