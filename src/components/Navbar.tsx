@@ -51,8 +51,10 @@ export default function Navbar() {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
+  if (pathname.includes("admin")) return null;
+
   return (
-    <header className="sticky top-0 z-50 overflow-x-hidden">
+    <header className="sticky top-0 z-50 overflow-hidden">
       <div
         className="backdrop-blur-sm bg-trnaparent/70 dark:bg-slate-900/60 border-b border-white/10
                    shadow-sm"
@@ -95,7 +97,7 @@ export default function Navbar() {
             </nav>
 
             {/* Mobile controls */}
-            <div className="flex items-center md:hidden">
+            <div className="flex items-center md:hidden gap-x-2">
               <ProfileMenu />
               <button
                 onClick={() => setOpen((s) => !s)}
@@ -137,7 +139,7 @@ export default function Navbar() {
         <div
           className={clsx(
             "md:hidden transform-gpu transition-all bg-gray-50 relative w-full duration-300 ease-in-out overflow-hidden",
-            open ? "h-screen opacity-100 left-0" : " left-[100vw]"
+            open ? "h-screen opacity-100" : "hidden"
           )}
         >
           <div className="px-4 pt-2 pb-6 flex flex-col space-y-1">

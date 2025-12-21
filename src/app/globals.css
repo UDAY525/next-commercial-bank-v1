@@ -1,3 +1,22 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@layer utilities {
+  .no-ring {
+    @apply ring-0 ring-offset-0 outline-none focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+}
+
+:root {
+  --color-Ap: #ff6384;
+  --color-An: #ff8a80;
+
+  --color-ABp: #36a2eb;
+  --color-ABn: #4fc3f7;
+
+  --color-Bp: #ffce56;
+  --color-Bn: #fff176;
+
+  --color-Op: #81c784;
+  --color-On: #a5d6a7;
+}

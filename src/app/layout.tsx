@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import Navbar from "@/components/Navbar";
+import ReactQueryProvider from "@/providers/react-query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +30,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-50 dark:bg-slate-900`}
       >
-        <SessionProvider>
-          <Navbar />
-          {children}
-        </SessionProvider>
+        <ReactQueryProvider>
+          <SessionProvider>
+            <Navbar />
+            {children}
+          </SessionProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
