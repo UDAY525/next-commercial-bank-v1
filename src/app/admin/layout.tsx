@@ -9,6 +9,8 @@ import {
   UserPen,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 const ADMIN_CONSOLE_MENU = [
   {
@@ -38,8 +40,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 export default AdminLayout;
 
 export const AdminSidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
-
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname() ?? "/";
+  console.warn(pathname);
   return (
     <aside
       className={`
@@ -71,7 +74,11 @@ export const AdminSidebar = () => {
           <Link
             key={item.id}
             href={`/admin/${item.link}`}
-            className="flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 group"
+            className={cn(
+              "flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 group",
+              pathname?.includes(item.link) &&
+                "bg-rose-700 text-white hover:bg-rose-800 hover:text-white"
+            )}
           >
             <div className="min-w-[24px] flex justify-center">{item.icon}</div>
             <span
