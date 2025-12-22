@@ -54,7 +54,7 @@ export default function Navbar() {
   if (pathname.includes("admin")) return null;
 
   return (
-    <header className="sticky top-0 z-50 overflow-hidden">
+    <header className="fixed w-full top-0 z-50 overflow-hidden">
       <div
         className="backdrop-blur-sm bg-trnaparent/70 dark:bg-slate-900/60 border-b border-white/10
                    shadow-sm"
