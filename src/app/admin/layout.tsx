@@ -7,6 +7,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   UserPen,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,6 +29,122 @@ const ADMIN_CONSOLE_MENU = [
   { id: 3, name: "Grants", link: "grant", icon: <HeartHandshake size={22} /> },
 ];
 
+export function AdminSidebar() {
+  const pathname = usePathname() ?? "/";
+  const [isOpen, setIsOpen] = useState(false); // desktop collapse
+  const [mobileOpen, setMobileOpen] = useState(false); // mobile drawer
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed z-50 md:static md:z-auto",
+          "h-screen bg-white border-r",
+          "transition-all duration-300 ease-in-out",
+          // desktop width
+          isOpen ? "md:w-64" : "md:w-20",
+          // mobile slide
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "w-64"
+        )}
+      >
+        {/* Header */}
+        <div
+          className={cn(
+            "flex h-16 items-center px-4 border-b",
+            isOpen || mobileOpen ? "justify-between" : "justify-center"
+          )}
+        >
+          <h1
+            className={cn(
+              "font-bold text-rose-500 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out",
+              mobileOpen || isOpen
+                ? "max-w-[200px] translate-x-0 animate-in slide-in-from-left-2 delay-150"
+                : "max-w-0 -translate-x-4 md:pointer-events-none"
+            )}
+          >
+            Admin Console
+          </h1>
+
+          {/* Desktop toggle */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="hidden md:flex p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+          >
+            {isOpen ? (
+              <PanelLeftClose size={20} />
+            ) : (
+              <PanelLeftOpen size={20} />
+            )}
+          </button>
+
+          {/* Mobile close */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden p-2 rounded-lg hover:bg-slate-100"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Menu */}
+        <nav className="flex-1 p-3 space-y-2 overflow-hidden">
+          {ADMIN_CONSOLE_MENU.map((item) => {
+            const active = pathname.includes(item.link);
+
+            return (
+              <Link
+                key={item.id}
+                href={`/admin/${item.link}`}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center  p-3 rounded-xl",
+                  "transition-all duration-200",
+                  active
+                    ? "bg-rose-700 text-white"
+                    : "text-slate-600 hover:bg-rose-50 hover:text-rose-600",
+                  mobileOpen || isOpen ? "gap-4" : "justify-center"
+                )}
+              >
+                <div className="min-w-6 flex justify-center">{item.icon}</div>
+
+                <span
+                  className={cn(
+                    "text-sm font-medium whitespace-nowrap overflow-hidden",
+                    "transition-all duration-300 ease-out",
+                    mobileOpen || isOpen
+                      ? "max-w-40 translate-x-0 scale-100 delay-150"
+                      : "max-w-0 hidden -translate-x-2 scale-95 md:pointer-events-none"
+                  )}
+                >
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed bottom-6 left-6 z-40 md:hidden p-4 rounded-full bg-rose-600 text-white shadow-lg"
+      >
+        <PanelLeftOpen size={22} />
+      </button>
+    </>
+  );
+}
+
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
@@ -38,61 +155,3 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default AdminLayout;
-
-export const AdminSidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname() ?? "/";
-  console.warn(pathname);
-  return (
-    <aside
-      className={`
-        relative flex flex-col border-r bg-white h-screen sticky top-0
-        transition-all duration-300 ease-in-out
-        ${isOpen ? "w-64" : "w-20"}
-      `}
-    >
-      {/* Header */}
-      <div className="flex h-16 w-full items-center justify-between px-4 border-b">
-        <h1
-          className={`font-bold text-rose-500 transition-opacity duration-300 ${
-            isOpen ? "opacity-100" : "opacity-0 hidden"
-          }`}
-        >
-          Admin Console
-        </h1>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-        >
-          {isOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
-        </button>
-      </div>
-
-      {/* Menu Options */}
-      <nav className="flex-1 p-3 space-y-2 overflow-x-hidden">
-        {ADMIN_CONSOLE_MENU.map((item) => (
-          <Link
-            key={item.id}
-            href={`/admin/${item.link}`}
-            className={cn(
-              "flex items-center gap-4 p-3 rounded-xl text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200 group",
-              pathname?.includes(item.link) &&
-                "bg-rose-700 text-white hover:bg-rose-800 hover:text-white"
-            )}
-          >
-            <div className="min-w-[24px] flex justify-center">{item.icon}</div>
-            <span
-              className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                isOpen
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-10 pointer-events-none"
-              }`}
-            >
-              {item.name}
-            </span>
-          </Link>
-        ))}
-      </nav>
-    </aside>
-  );
-};
