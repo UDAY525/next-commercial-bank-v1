@@ -3,39 +3,29 @@
 import React, { Suspense } from "react";
 import { getUserId } from "@/lib/session";
 import connectDB from "@/connectDB";
-import Donation from "@/models/Donation";
 import DonationDataTable from "./DonationDataTable";
+import BloodTransactionsModel from "@/models/BloodTransactions";
 
-interface DonationType {
-  _id: string;
-  name: string;
-  donatedBloodGroup: string;
-  quantity: number;
-  donatedAt?: string;
-}
-
-async function fetchDonations() {
+async function fetchDonationsFromUserTransactions() {
   const userId = await getUserId();
-
   if (!userId) {
     throw new Error("Not authenticated");
   }
 
   await connectDB();
-
-  const donations = (await Donation.find({
-    donarId: userId,
+  const donations = await BloodTransactionsModel.find({
+    userId,
+    type: "IN",
   })
     .lean()
-    .exec()) as DonationType[];
-
+    .exec();
   return donations;
 }
 
 async function DonationTableContent() {
-  const donations = await fetchDonations();
+  const donationTransactions = await fetchDonationsFromUserTransactions();
 
-  if (!donations || donations.length === 0) {
+  if (!donationTransactions || donationTransactions.length === 0) {
     return (
       <div className="p-4 text-gray-600">
         No donations found. Start donating today!
@@ -44,12 +34,11 @@ async function DonationTableContent() {
   }
 
   // Serialize Mongoose ObjectIds and dates to plain objects
-  const serializedDonations = donations.map((donation) => ({
+  const serializedDonations = donationTransactions.map((donation) => ({
     _id: donation._id.toString(),
-    name: donation.name,
-    donatedBloodGroup: donation.donatedBloodGroup,
+    bloodGroup: donation.bloodGroup,
     quantity: donation.quantity,
-    donatedAt: donation.donatedAt?.toString() || null,
+    donatedAt: donation.createdAt?.toString() || null,
   }));
 
   return <DonationDataTable donations={serializedDonations} />;
