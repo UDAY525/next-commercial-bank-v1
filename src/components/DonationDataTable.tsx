@@ -13,13 +13,12 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface Donation {
   _id: string;
-  name: string;
-  donatedBloodGroup: string;
+  bloodGroup: string;
   quantity: number;
   donatedAt?: string | null;
 }
 
-type SortField = "donatedBloodGroup" | "quantity" | "donatedAt";
+type SortField = "bloodGroup" | "quantity" | "donatedAt";
 type SortOrder = "asc" | "desc" | null;
 
 interface SortConfig {
@@ -65,15 +64,15 @@ export default function DonationDataTable({
 
     const sorted = [...donations].sort((a, b) => {
       const aValue =
-        sortConfig.field === "donatedBloodGroup"
-          ? a.donatedBloodGroup
+        sortConfig.field === "bloodGroup"
+          ? a.bloodGroup
           : sortConfig.field === "quantity"
           ? a.quantity
           : new Date(a.donatedAt || 0).getTime();
 
       const bValue =
-        sortConfig.field === "donatedBloodGroup"
-          ? b.donatedBloodGroup
+        sortConfig.field === "bloodGroup"
+          ? b.bloodGroup
           : sortConfig.field === "quantity"
           ? b.quantity
           : new Date(b.donatedAt || 0).getTime();
@@ -102,19 +101,19 @@ export default function DonationDataTable({
   };
 
   return (
-    <div className="w-full">
-      <div className="rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div className="w-full px-4 lg:px-8 ">
+      <div className="rounded-lg border max-w-3xl mx-auto border-gray-200 shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-linear-to-r from-blue-50 to-blue-100 hover:bg-linear-to-r hover:from-blue-100 hover:to-blue-200 border-b border-gray-200">
               <TableHead
                 className="cursor-pointer select-none font-semibold text-blue-900 py-4 px-6 transition-colors duration-200"
-                onClick={() => handleSort("donatedBloodGroup")}
+                onClick={() => handleSort("bloodGroup")}
               >
                 <div className="flex items-center gap-2 group">
                   <span>Blood Group</span>
                   <SortIcon
-                    field="donatedBloodGroup"
+                    field="bloodGroup"
                     currentField={sortConfig.field}
                     currentOrder={sortConfig.order}
                   />
@@ -158,7 +157,7 @@ export default function DonationDataTable({
               >
                 <TableCell className="py-4 px-6 font-medium text-gray-900">
                   <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-100 text-red-700 font-bold text-sm">
-                    {donation.donatedBloodGroup}
+                    {donation.bloodGroup}
                   </span>
                 </TableCell>
                 <TableCell className="py-4 px-6 text-gray-700">

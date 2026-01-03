@@ -85,7 +85,7 @@ export function ProfileMenu() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="default" className="p-1 bg-transparent no-ring">
           <img
@@ -97,7 +97,7 @@ export function ProfileMenu() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-56 bg-gray-300/5 border-gray-200 backdrop-blur-xl"
+        className="w-56 mx-4 bg-white/25 border-gray-200 backdrop-blur-xl"
         align="center"
       >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -111,11 +111,15 @@ export function ProfileMenu() {
 
         <DropdownMenuSeparator className="bg-gray-300/50" />
         <DropdownMenuItem asChild>
-          <a href="/profile">Profile</a>
+          <a href="/profile" className="font-medium">
+            Profile
+          </a>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <a href="/requests">Requests</a>
+          <a href="/requests" className="font-medium">
+            Requests
+          </a>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="bg-gray-400/50" />
