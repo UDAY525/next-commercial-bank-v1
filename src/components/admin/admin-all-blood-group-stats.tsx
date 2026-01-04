@@ -21,7 +21,7 @@ const BG_COLORS: Record<string, string> = {
 
 const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
   return (
-    <div className="p-6 bg-slate-50 min-h-screen">
+    <div className="p-6 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <header className="mb-10">
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
