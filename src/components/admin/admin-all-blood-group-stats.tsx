@@ -1,12 +1,11 @@
 import React from "react";
 import { Droplet, Users, History, Activity } from "lucide-react";
-
-interface BloodStat {
-  bloodGroup: string;
-  quantity: number;
-  totalDonations: number;
-  totalUsersDonated: number;
-}
+import {
+  BLOOD_GROUPS,
+  BloodGroup,
+  BloodGroupInventoryStats,
+} from "@/lib/contracts/admin/inventory-stats";
+import { group } from "console";
 
 const BG_COLORS: Record<string, string> = {
   "A+": "bg-red-50 border-red-200 text-red-700 icon-bg-red-500",
@@ -19,9 +18,13 @@ const BG_COLORS: Record<string, string> = {
   "O-": "bg-slate-50 border-slate-200 text-slate-700 icon-bg-slate-500",
 };
 
-const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
+const BloodGroupDashboard = ({
+  data,
+}: {
+  data: Record<BloodGroup, BloodGroupInventoryStats>;
+}) => {
   return (
-    <div className="p-6 min-h-screen">
+    <div className="p-6 ">
       <div className="max-w-7xl mx-auto">
         <header className="mb-10">
           <h1 className="text-3xl font-black text-slate-800 tracking-tight">
@@ -34,14 +37,14 @@ const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
 
         {/* The Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.map((stat) => {
+          {BLOOD_GROUPS.map((group) => {
+            const stat: BloodGroupInventoryStats = data[group];
             const colorClass =
-              BG_COLORS[stat.bloodGroup] ||
-              "bg-gray-50 border-gray-200 text-gray-700";
+              BG_COLORS[group] || "bg-gray-50 border-gray-200 text-gray-700";
 
             return (
               <div
-                key={stat.bloodGroup}
+                key={group}
                 className={`relative group overflow-hidden rounded-3xl border-2 p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${colorClass}`}
               >
                 {/* Background Decorator */}
@@ -60,7 +63,7 @@ const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
                       />
                     </div>
                     <span className="text-4xl font-black tracking-tighter italic">
-                      {stat.bloodGroup}
+                      {group}
                     </span>
                   </div>
 
@@ -71,7 +74,7 @@ const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
                         Stock Level
                       </p>
                       <h2 className="text-3xl font-bold flex items-baseline gap-1">
-                        {stat.quantity}
+                        {stat.netQuantity}
                         <span className="text-sm font-medium">units</span>
                       </h2>
                     </div>
@@ -81,7 +84,7 @@ const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
                         <Users size={16} className="opacity-60" />
                         <div>
                           <p className="text-xs font-bold leading-none">
-                            {stat.totalUsersDonated}
+                            {stat.in.uniqueUsers}
                           </p>
                           <p className="text-[9px] uppercase opacity-60">
                             Donors
@@ -92,7 +95,7 @@ const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
                         <History size={16} className="opacity-60" />
                         <div>
                           <p className="text-xs font-bold leading-none">
-                            {stat.totalDonations}
+                            {stat.in.transactions}
                           </p>
                           <p className="text-[9px] uppercase opacity-60">
                             History
@@ -108,7 +111,10 @@ const BloodGroupDashboard = ({ data }: { data: BloodStat[] }) => {
                   <div
                     className="h-full bg-current opacity-40 rounded-full"
                     style={{
-                      width: `${Math.min((stat.quantity / 500) * 100, 100)}%`,
+                      width: `${Math.min(
+                        (stat.netQuantity / 500) * 100,
+                        100
+                      )}%`,
                     }}
                   ></div>
                 </div>
