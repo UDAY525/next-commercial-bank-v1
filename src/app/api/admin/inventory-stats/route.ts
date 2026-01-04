@@ -1,41 +1,93 @@
 import connectDB from "@/connectDB";
 import { NextRequest, NextResponse } from "next/server";
 import Donation from "@/models/Donation";
+import BloodTransactionsModel from "@/models/BloodTransactions";
+import { group } from "console";
+import {
+  BloodGroup,
+  InventoryStatsResponse,
+} from "@/lib/contracts/admin/inventory-stats";
+import { Types } from "mongoose";
 
-const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const BLOOD_GROUPS = [
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "AB+",
+  "AB-",
+  "O+",
+  "O-",
+] as const;
 
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    // 1. Let MongoDB group the data (Much faster than JS reduce)
-    const stats = await Donation.aggregate([
+    const rawStats = await BloodTransactionsModel.aggregate<{
+      _id: {
+        bloodGroup: BloodGroup;
+        type: "IN" | "OUT";
+      };
+      quantity: number;
+      transactions: number;
+      users: string[];
+    }>([
       {
         $group: {
-          _id: "$donatedBloodGroup",
+          _id: {
+            bloodGroup: "$bloodGroup",
+            type: "$type",
+          },
           quantity: { $sum: { $toDouble: "$quantity" } },
-          totalDonations: { $sum: 1 },
-          // Collects unique donor IDs automatically
-          donorsSet: { $addToSet: "$donarId" },
+          transactions: { $sum: 1 },
+          users: { $addToSet: { $toString: "$userId" } },
         },
       },
     ]);
 
-    // 2. Map the results to include all blood groups even if they have 0 donations
-    const filteredByBloodGroup = BLOOD_GROUPS.map((group) => {
-      const groupData = stats.find((s) => s._id === group);
+    const byBloodGroup = {} as InventoryStatsResponse["byBloodGroup"];
 
-      return {
-        bloodGroup: group,
-        quantity: groupData?.quantity || 0,
-        totalDonations: groupData?.totalDonations || 0,
-        totalUsersDonated: groupData?.donorsSet?.length || 0,
-        // Convert the array of unique IDs to a JSON string
-        donarsList: groupData?.donorsSet || [],
+    let totalInQuantity = 0;
+    let totalOutQuantity = 0;
+
+    for (const group of BLOOD_GROUPS) {
+      const groupStats = rawStats.filter((s) => s._id.bloodGroup === group);
+
+      const inStat = groupStats.find((s) => s._id.type === "IN");
+      const outStat = groupStats.find((s) => s._id.type === "OUT");
+
+      const inQty = inStat?.quantity ?? 0;
+      const outQty = outStat?.quantity ?? 0;
+
+      totalInQuantity += inQty;
+      totalOutQuantity += outQty;
+
+      byBloodGroup[group] = {
+        in: {
+          quantity: inQty,
+          transactions: inStat?.transactions ?? 0,
+          uniqueUsers: inStat?.users.length ?? 0,
+          userIds: inStat?.users.map(String) ?? [],
+        },
+        out: {
+          quantity: outQty,
+          transactions: outStat?.transactions ?? 0,
+          uniqueUsers: outStat?.users.length ?? 0,
+          userIds: outStat?.users.map(String) ?? [],
+        },
+        netQuantity: inQty - outQty,
       };
-    });
+    }
 
-    return NextResponse.json({ filteredByBloodGroup });
+    return NextResponse.json({
+      summary: {
+        totalInQuantity,
+        totalOutQuantity,
+        netQuantity: totalInQuantity - totalOutQuantity,
+      },
+      byBloodGroup,
+    });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return NextResponse.json(

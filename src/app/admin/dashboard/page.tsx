@@ -19,7 +19,7 @@ const AdminDashBoard = () => {
   console.log(data?.filteredByBloodGroup);
   return (
     <div>
-      <BloodGroupDashboard data={data?.filteredByBloodGroup} />{" "}
+      <BloodGroupDashboard data={data?.byBloodGroup} />{" "}
     </div>
   );
 };
