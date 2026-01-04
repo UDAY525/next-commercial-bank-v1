@@ -42,11 +42,38 @@ export async function POST(req: NextRequest) {
 
     const request = await RequestGrantsModel.create({
       userId,
-      ...validation.data, // ✅ trusted, typed data
+      ...validation.data,
+      status: "pending",
       createdAt: new Date(),
     });
 
     return NextResponse.json({ success: true, request }, { status: 201 });
+  } catch (error: unknown) {
+    console.error("Request grant error:", error);
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    await connectDB();
+
+    const userId = await getUserId();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const allRequests = await RequestGrantsModel.find({});
+
+    return NextResponse.json(
+      { success: true, requests: allRequests },
+      { status: 201 }
+    );
   } catch (error: unknown) {
     console.error("Request grant error:", error);
 
