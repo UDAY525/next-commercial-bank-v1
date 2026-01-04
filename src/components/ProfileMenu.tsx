@@ -126,7 +126,7 @@ export function ProfileMenu() {
         <DropdownMenuItem asChild>
           <Link
             className="ring-0 outline-0 text-green-600 font-semibold w-full focus-visible:none no-ring"
-            href={"/admin"}
+            href={"/admin/grant"}
           >
             <ShieldUser className="!w-6 !h-6" />
             Admin

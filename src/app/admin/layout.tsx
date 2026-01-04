@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { MotionBackground } from "@/components/admin/MotionBackground";
 
 const ADMIN_CONSOLE_MENU = [
   {
@@ -147,9 +148,13 @@ export function AdminSidebar() {
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="flex min-h-screen w-full bg-slate-50 text-slate-900">
-      <AdminSidebar />
-      <main className="flex-1 p-8">{children}</main>
+    <div className="relative min-h-screen w-full  text-slate-900 overflow-hidden">
+      <MotionBackground />
+
+      <div className="relative flex min-h-screen w-full">
+        <AdminSidebar />
+        <main className="flex-1 p-6 md:p-8">{children}</main>
+      </div>
     </div>
   );
 };
