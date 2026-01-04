@@ -74,9 +74,14 @@ const RequestPage = () => {
     }
   }, [user, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log("Request Submitted:", values);
     // Add your mutation here
+    await fetch("/api/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
   };
 
   return (
