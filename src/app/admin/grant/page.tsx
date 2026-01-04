@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /* ---------------- Types ---------------- */
 
@@ -77,47 +78,71 @@ const getStatusBadge = (status: RequestStatus) => {
   }
 };
 
-/* ---------------- Component ---------------- */
+const updateRequestStatus = async ({
+  id,
+  status,
+}: {
+  id: string;
+  status: RequestStatus;
+}) => {
+  const res = await fetch(`/api/request/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) throw new Error("Failed to update status");
+};
 
 export default function RequestManagement() {
-  const [requests, setRequests] = useState<BloodRequest[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof BloodRequest;
     direction: "asc" | "desc";
   } | null>(null);
+  const queryClient = useQueryClient();
 
-  /* ---------------- Fetch ---------------- */
-
-  useEffect(() => {
-    const fetchRequests = async () => {
+  const { data, isFetching } = useQuery({
+    queryKey: ["all-user-requests"],
+    queryFn: async () => {
       try {
         const res = await fetch("/api/request");
         const data = await res.json();
-        if (data?.success) setRequests(data.requests);
+        return data;
       } catch (err) {
         console.error("Failed to fetch requests", err);
       } finally {
-        setLoading(false);
       }
-    };
+    },
+  });
 
-    fetchRequests();
-  }, []);
+  const mutation = useMutation({
+    mutationFn: updateRequestStatus,
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["all-user-requests"] });
 
-  /* ---------------- Update Status ---------------- */
+      const previous = queryClient.getQueryData<BloodRequest[]>([
+        "all-user-requests",
+      ]);
 
-  const updateStatus = async (id: string, status: RequestStatus) => {
-    setRequests((prev) =>
-      prev.map((r) => (r._id === id ? { ...r, status } : r))
-    );
+      queryClient.setQueryData<BloodRequest[]>(
+        ["all-user-requests"],
+        (old = []) => old.map((r) => (r._id === id ? { ...r, status } : r))
+      );
 
-    // API call placeholder
-    // await fetch(`/api/request/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
-  };
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) {
+        queryClient.setQueryData(["all-user-requests"], ctx.previous);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-user-requests"] });
+    },
+  });
 
-  /* ---------------- Sorting ---------------- */
+  const requests: BloodRequest[] = data?.requests;
 
   const handleSort = (key: keyof BloodRequest) => {
     setSortConfig((prev) => {
@@ -131,28 +156,27 @@ export default function RequestManagement() {
     });
   };
 
-  /* ---------------- Filter + Sort ---------------- */
-
   const filteredRequests = useMemo(() => {
-    let result = requests.filter(
+    let result: BloodRequest[] = requests?.filter(
       (r) =>
         r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.bloodGroup.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.status.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    if (sortConfig) {
+    if (requests && sortConfig) {
       result = [...result].sort((a, b) => {
         const aVal = a[sortConfig.key];
         const bVal = b[sortConfig.key];
-        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        if (aVal < bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        if (aVal > bVal) return sortConfig.direction === "desc" ? 1 : -1;
+
         return 0;
       });
     }
-
     return result;
-  }, [requests, searchQuery, sortConfig]);
+  }, [requests, sortConfig, searchQuery]);
+
+  if (isFetching) return <div>Loading...</div>;
 
   /* ---------------- Render ---------------- */
 
@@ -328,13 +352,23 @@ export default function RequestManagement() {
                               <DropdownMenuSeparator />
 
                               <DropdownMenuItem
-                                onClick={() => updateStatus(req._id, "pending")}
+                                onClick={() =>
+                                  mutation.mutate({
+                                    id: req._id,
+                                    status: "pending",
+                                  })
+                                }
                               >
                                 Mark Pending
                               </DropdownMenuItem>
 
                               <DropdownMenuItem
-                                onClick={() => updateStatus(req._id, "granted")}
+                                onClick={() =>
+                                  mutation.mutate({
+                                    id: req._id,
+                                    status: "granted",
+                                  })
+                                }
                                 className="text-emerald-600 focus:bg-emerald-50"
                               >
                                 Grant
@@ -342,7 +376,10 @@ export default function RequestManagement() {
 
                               <DropdownMenuItem
                                 onClick={() =>
-                                  updateStatus(req._id, "rejected")
+                                  mutation.mutate({
+                                    id: req._id,
+                                    status: "rejected",
+                                  })
                                 }
                                 className="text-red-600 focus:bg-red-50"
                               >
@@ -357,7 +394,7 @@ export default function RequestManagement() {
                 </TableBody>
               </Table>
 
-              {!loading && filteredRequests.length === 0 && (
+              {filteredRequests && filteredRequests.length === 0 && (
                 <div className="py-20 text-center text-slate-400">
                   No requests found.
                 </div>
@@ -406,7 +443,12 @@ export default function RequestManagement() {
                   size="sm"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => updateStatus(req._id, "granted")}
+                  onClick={() =>
+                    mutation.mutate({
+                      id: req._id,
+                      status: "granted",
+                    })
+                  }
                 >
                   Grant
                 </Button>
@@ -414,7 +456,12 @@ export default function RequestManagement() {
                   size="sm"
                   variant="outline"
                   className="flex-1 text-red-600 border-red-200"
-                  onClick={() => updateStatus(req._id, "rejected")}
+                  onClick={() =>
+                    mutation.mutate({
+                      id: req._id,
+                      status: "rejected",
+                    })
+                  }
                 >
                   Reject
                 </Button>
