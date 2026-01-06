@@ -85,11 +85,13 @@ const updateRequestStatus = async ({
   id: string;
   status: RequestStatus;
 }) => {
-  const res = await fetch(`/api/request/${id}`, {
+  const res = await fetch(`/api/admin/requests/grant/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
   });
+
+  console.log("Sending updated status");
 
   if (!res.ok) throw new Error("Failed to update status");
 };
@@ -134,6 +136,7 @@ export default function RequestManagement() {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.previous) {
+        console.log("error at status changes");
         queryClient.setQueryData(["all-user-requests"], ctx.previous);
       }
     },
@@ -352,7 +355,7 @@ export default function RequestManagement() {
                               <DropdownMenuSeparator />
 
                               <DropdownMenuItem
-                                onClick={() =>
+                                onSelect={() =>
                                   mutation.mutate({
                                     id: req._id,
                                     status: "pending",
@@ -363,7 +366,7 @@ export default function RequestManagement() {
                               </DropdownMenuItem>
 
                               <DropdownMenuItem
-                                onClick={() =>
+                                onSelect={() =>
                                   mutation.mutate({
                                     id: req._id,
                                     status: "granted",
@@ -375,7 +378,7 @@ export default function RequestManagement() {
                               </DropdownMenuItem>
 
                               <DropdownMenuItem
-                                onClick={() =>
+                                onSelect={() =>
                                   mutation.mutate({
                                     id: req._id,
                                     status: "rejected",
@@ -393,6 +396,19 @@ export default function RequestManagement() {
                   </AnimatePresence>
                 </TableBody>
               </Table>
+
+              {filteredRequests && (
+                <button
+                  onClick={() =>
+                    updateRequestStatus({
+                      id: filteredRequests[0]._id,
+                      status: "granted",
+                    })
+                  }
+                >
+                  Click
+                </button>
+              )}
 
               {filteredRequests && filteredRequests.length === 0 && (
                 <div className="py-20 text-center text-slate-400">

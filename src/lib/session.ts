@@ -1,4 +1,6 @@
 import { auth } from "@/auth";
+import connectDB from "@/connectDB";
+import User from "@/models/User";
 import { NextResponse } from "next/server";
 
 /**
@@ -9,6 +11,23 @@ import { NextResponse } from "next/server";
 export async function getUserId(): Promise<string | null> {
   const session = await auth();
   return session?.user?.id ?? null;
+}
+
+export async function isUserAdmin() {
+  const session = await auth();
+  if (!session || !session?.user) return false;
+
+  try {
+    await connectDB();
+    const isAdmin = await User.findOne({
+      email: session.user?.email,
+      role: "admin",
+    }).lean();
+
+    console.warn("Is Admin:", isAdmin);
+
+    return isAdmin;
+  } catch (error) {}
 }
 
 /**
