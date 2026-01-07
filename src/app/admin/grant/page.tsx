@@ -78,24 +78,6 @@ const getStatusBadge = (status: RequestStatus) => {
   }
 };
 
-const updateRequestStatus = async ({
-  id,
-  status,
-}: {
-  id: string;
-  status: RequestStatus;
-}) => {
-  const res = await fetch(`/api/admin/requests/grant/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
-  });
-
-  console.log("Sending updated status");
-
-  if (!res.ok) throw new Error("Failed to update status");
-};
-
 export default function RequestManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -118,8 +100,30 @@ export default function RequestManagement() {
     },
   });
 
+  const updateRequestStatus = async ({
+    id,
+    status,
+  }: {
+    id: string;
+    status: RequestStatus;
+  }) => {
+    console.log("TRIGGERING PATCH FOR:", id, status);
+    const res = await fetch(`/api/admin/requests/grant/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+
+    console.log("Sending updated status");
+
+    if (!res.ok) throw new Error("Failed to update status");
+
+    return await res.json();
+  };
+
   const mutation = useMutation({
-    mutationFn: updateRequestStatus,
+    mutationFn: (variables: { id: string; status: RequestStatus }) =>
+      updateRequestStatus(variables),
     onMutate: async ({ id, status }) => {
       await queryClient.cancelQueries({ queryKey: ["all-user-requests"] });
 
@@ -127,10 +131,15 @@ export default function RequestManagement() {
         "all-user-requests",
       ]);
 
-      queryClient.setQueryData<BloodRequest[]>(
-        ["all-user-requests"],
-        (old = []) => old.map((r) => (r._id === id ? { ...r, status } : r))
-      );
+      queryClient.setQueryData(["all-user-requests"], (old) => {
+        if (!old || !old.requests) return old;
+        return {
+          ...old,
+          requests: old.requests.map((r) =>
+            r._id === id ? { ...r, status } : r
+          ),
+        };
+      });
 
       return { previous };
     },
@@ -366,12 +375,12 @@ export default function RequestManagement() {
                               </DropdownMenuItem>
 
                               <DropdownMenuItem
-                                onSelect={() =>
-                                  mutation.mutate({
+                                onSelect={async (e) => {
+                                  await mutation.mutate({
                                     id: req._id,
                                     status: "granted",
-                                  })
-                                }
+                                  });
+                                }}
                                 className="text-emerald-600 focus:bg-emerald-50"
                               >
                                 Grant
