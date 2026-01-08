@@ -37,13 +37,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { GetAllRequestGrants } from "@/lib/contracts/admin/request-grant";
 
 /* ---------------- Types ---------------- */
 
 type RequestStatus = "pending" | "granted" | "rejected";
 
 interface BloodRequest {
-  _id: string;
+  id: string;
   userId: string;
   name: string;
   phone: string;
@@ -86,12 +87,17 @@ export default function RequestManagement() {
   } | null>(null);
   const queryClient = useQueryClient();
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, isError } = useQuery({
     queryKey: ["all-user-requests"],
     queryFn: async () => {
       try {
         const res = await fetch("/api/request");
-        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch requests");
+        }
+
+        const data: GetAllRequestGrants = await res.json();
         return data;
       } catch (err) {
         console.error("Failed to fetch requests", err);
@@ -131,15 +137,18 @@ export default function RequestManagement() {
         "all-user-requests",
       ]);
 
-      queryClient.setQueryData(["all-user-requests"], (old) => {
-        if (!old || !old.requests) return old;
-        return {
-          ...old,
-          requests: old.requests.map((r) =>
-            r._id === id ? { ...r, status } : r
-          ),
-        };
-      });
+      queryClient.setQueryData(
+        ["all-user-requests"],
+        (old: GetAllRequestGrants) => {
+          if (!old || !old.success) return old;
+          return {
+            ...old,
+            requests: old.requests.map((r) =>
+              r?.id === id ? { ...r, status } : r
+            ),
+          };
+        }
+      );
 
       return { previous };
     },
@@ -154,7 +163,7 @@ export default function RequestManagement() {
     },
   });
 
-  const requests: BloodRequest[] = data?.requests;
+  const requests: BloodRequest[] = data?.success ? data?.requests : [];
 
   const handleSort = (key: keyof BloodRequest) => {
     setSortConfig((prev) => {
@@ -298,7 +307,7 @@ export default function RequestManagement() {
                   <AnimatePresence>
                     {filteredRequests.map((req, index) => (
                       <motion.tr
-                        key={req._id}
+                        key={req.id}
                         layout
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -366,7 +375,7 @@ export default function RequestManagement() {
                               <DropdownMenuItem
                                 onSelect={() =>
                                   mutation.mutate({
-                                    id: req._id,
+                                    id: req.id,
                                     status: "pending",
                                   })
                                 }
@@ -377,7 +386,7 @@ export default function RequestManagement() {
                               <DropdownMenuItem
                                 onSelect={async (e) => {
                                   await mutation.mutate({
-                                    id: req._id,
+                                    id: req.id,
                                     status: "granted",
                                   });
                                 }}
@@ -389,7 +398,7 @@ export default function RequestManagement() {
                               <DropdownMenuItem
                                 onSelect={() =>
                                   mutation.mutate({
-                                    id: req._id,
+                                    id: req.id,
                                     status: "rejected",
                                   })
                                 }
@@ -406,19 +415,6 @@ export default function RequestManagement() {
                 </TableBody>
               </Table>
 
-              {filteredRequests && (
-                <button
-                  onClick={() =>
-                    updateRequestStatus({
-                      id: filteredRequests[0]._id,
-                      status: "granted",
-                    })
-                  }
-                >
-                  Click
-                </button>
-              )}
-
               {filteredRequests && filteredRequests.length === 0 && (
                 <div className="py-20 text-center text-slate-400">
                   No requests found.
@@ -434,7 +430,7 @@ export default function RequestManagement() {
         <AnimatePresence>
           {filteredRequests.map((req) => (
             <motion.div
-              key={req._id}
+              key={req.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -470,7 +466,7 @@ export default function RequestManagement() {
                   className="flex-1"
                   onClick={() =>
                     mutation.mutate({
-                      id: req._id,
+                      id: req.id,
                       status: "granted",
                     })
                   }
@@ -483,7 +479,7 @@ export default function RequestManagement() {
                   className="flex-1 text-red-600 border-red-200"
                   onClick={() =>
                     mutation.mutate({
-                      id: req._id,
+                      id: req.id,
                       status: "rejected",
                     })
                   }
