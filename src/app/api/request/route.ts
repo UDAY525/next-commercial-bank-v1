@@ -3,6 +3,10 @@ import connectDB from "@/connectDB";
 import { getUserId } from "@/lib/session";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import {
+  GetAllRequestGrantsErrorResponse,
+  GetAllRequestGrantsSuccessResponse,
+} from "@/lib/contracts/admin/request-grant";
 
 const requestSchema = z.object({
   name: z.string().min(1, { message: "Must provide a user name" }),
@@ -65,20 +69,35 @@ export async function GET(req: NextRequest) {
     const userId = await getUserId();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json<GetAllRequestGrantsErrorResponse>(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const allRequests = await RequestGrantsModel.find({});
 
-    return NextResponse.json(
-      { success: true, requests: allRequests },
+    return NextResponse.json<GetAllRequestGrantsSuccessResponse>(
+      {
+        success: true,
+        requests: allRequests.map((r) => ({
+          id: r._id.toString(),
+          status: r.status,
+          userId: r.userId,
+          bloodGroup: r.bloodGroup,
+          quantity: r.quantity,
+          name: r.name,
+          phone: r.phone,
+          createdAt: r.createdAt.toISOString(),
+        })),
+      },
       { status: 201 }
     );
   } catch (error: unknown) {
     console.error("Request grant error:", error);
 
-    return NextResponse.json(
-      { error: "Internal server error" },
+    return NextResponse.json<GetAllRequestGrantsErrorResponse>(
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
