@@ -204,7 +204,7 @@ export default function RequestManagement() {
   return (
     <div className="relative z-10 max-w-7xl mx-auto p-4 md:p-8">
       {/* Header */}
-      <div className="sticky top-0 z-20 pb-4 mb-6">
+      <div className=" z-20 pb-4 mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">

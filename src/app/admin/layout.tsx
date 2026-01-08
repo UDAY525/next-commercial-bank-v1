@@ -153,7 +153,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="relative flex min-h-screen w-full">
         <AdminSidebar />
-        <main className="flex-1 py-6 md:p-8">{children}</main>
+        <main className="flex-1 py-6 overflow-y-scroll max-h-screen md:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );
