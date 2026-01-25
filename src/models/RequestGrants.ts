@@ -35,6 +35,10 @@ const RequestGrantsSchema = new mongoose.Schema({
     default: Date.now,
     required: false,
   },
+  bloodTransactionCreated: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const RequestGrantsModel =
