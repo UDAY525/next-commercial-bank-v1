@@ -98,3 +98,29 @@
     transform: scale(1);
   }
 }
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  display: flex;
+  width: calc(250px * 10);
+  animation: scroll 40s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); } /* Move by exactly half the width of the container */
+}
+
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content; /* Critical: allows the div to expand based on content */
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee-infinite:hover {
+  animation-play-state: paused; /* Nice touch: pauses on hover */
+}
