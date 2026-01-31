@@ -30,9 +30,17 @@ export interface InventoryFlowStats {
 export interface BloodGroupInventoryStats {
   in: InventoryFlowStats;
   out: InventoryFlowStats;
-
+  requestStats: RequestStatusStats;
   /** in.quantity - out.quantity */
   netQuantity: number;
+}
+
+export interface RequestStatusStats {
+  totalRequests: number;
+  totalAcceptedRequests: number;
+  totalRequestedQuantity: number;
+  totalGrantedQuantity: number;
+  fulfillmentPercentage: number;
 }
 
 export interface InventoryStatsResponse {

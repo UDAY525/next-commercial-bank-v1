@@ -107,14 +107,13 @@ const BloodGroupDashboard = ({
                 </div>
 
                 {/* Progress Bar (Visual indicator of stock health) */}
-                <div className="mt-6 h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
+                <p className="mt-6 mb-2">Accomplishment</p>
+                <div className=" h-1.5 w-full bg-black/5 rounded-full shadow  overflow-hidden">
                   <div
                     className="h-full bg-current opacity-40 rounded-full"
                     style={{
-                      width: `${Math.min(
-                        (stat.netQuantity / 500) * 100,
-                        100
-                      )}%`,
+                      width: `${stat.requestStats?.fulfillmentPercentage}%`,
+                      transition: "width 2s linear",
                     }}
                   ></div>
                 </div>

@@ -6,8 +6,10 @@ import { group } from "console";
 import {
   BloodGroup,
   InventoryStatsResponse,
+  RequestStatusStats,
 } from "@/lib/contracts/admin/inventory-stats";
 import { Types } from "mongoose";
+import RequestGrantsModel from "@/models/RequestGrants";
 
 const BLOOD_GROUPS = [
   "A+",
@@ -23,6 +25,55 @@ const BLOOD_GROUPS = [
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
+
+    const requestStatsByBloodGroup = await RequestGrantsModel.aggregate<{
+      _id: BloodGroup;
+      totalRequests: number;
+      totalAcceptedRequests: number;
+      totalRequestedQuantity: number;
+      totalGrantedQuantity: number;
+    }>([
+      {
+        $group: {
+          _id: "$bloodGroup",
+          totalRequests: { $sum: 1 },
+          totalAcceptedRequests: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "granted"] }, 1, 0],
+            },
+          },
+          totalRequestedQuantity: { $sum: "$quantity" },
+          totalGrantedQuantity: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "granted"] }, "$quantity", 0],
+            },
+          },
+        },
+      },
+    ]);
+    const requestStatsByGroup = {} as Record<BloodGroup, RequestStatusStats>;
+
+    for (const group of BLOOD_GROUPS) {
+      const stat = requestStatsByBloodGroup.find((s) => s._id === group);
+
+      const totalRequestedQuantity = stat?.totalRequestedQuantity ?? 0;
+      const totalGrantedQuantity = stat?.totalGrantedQuantity ?? 0;
+
+      requestStatsByGroup[group] = {
+        totalRequests: stat?.totalRequests ?? 0,
+        totalAcceptedRequests: stat?.totalAcceptedRequests ?? 0,
+        totalRequestedQuantity,
+        totalGrantedQuantity,
+        fulfillmentPercentage:
+          totalRequestedQuantity === 0
+            ? 0
+            : Number(
+                ((totalGrantedQuantity / totalRequestedQuantity) * 100).toFixed(
+                  2,
+                ),
+              ),
+      };
+    }
 
     const rawStats = await BloodTransactionsModel.aggregate<{
       _id: {
@@ -76,6 +127,7 @@ export async function GET(req: NextRequest) {
           uniqueUsers: outStat?.users.length ?? 0,
           userIds: outStat?.users.map(String) ?? [],
         },
+        requestStats: requestStatsByGroup[group],
         netQuantity: inQty - outQty,
       };
     }
@@ -92,12 +144,12 @@ export async function GET(req: NextRequest) {
     if (error instanceof Error) {
       return NextResponse.json(
         { error: error?.message || "Internal Server Error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
