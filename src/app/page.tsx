@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import ParallaxHero from "@/components/ParallaxHero";
 import LoginForm from "@/components/LoginForm";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 export default async function Home() {
   const session = await auth();
@@ -67,6 +68,73 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="py-24 bg-slate-50 dark:bg-slate-950">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-4xl font-extrabold mb-4 dark:text-white">
+            How It Works
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-16">
+            Simple, fast, and designed for emergencies.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              {
+                title: "Register",
+                desc: "Sign up as a donor or requester in seconds.",
+              },
+              {
+                title: "Match",
+                desc: "We instantly match blood groups nearby.",
+              },
+              {
+                title: "Save Lives",
+                desc: "Fast approvals and real-time tracking.",
+              },
+            ].map((step, i) => (
+              <div
+                key={i}
+                className="bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-xl hover:-translate-y-2 transition"
+              >
+                <div className="text-5xl font-black text-red-500 mb-6">
+                  {i + 1}
+                </div>
+                <h3 className="text-2xl font-bold mb-4 dark:text-white">
+                  {step.title}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400">
+                  {step.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24 bg-white dark:bg-slate-900">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-4xl font-extrabold mb-6 dark:text-white">
+              Built for Critical Moments
+            </h2>
+            <ul className="space-y-4 text-lg text-slate-600 dark:text-slate-400">
+              <li>✔ Verified donors & hospitals</li>
+              <li>✔ Real-time inventory tracking</li>
+              <li>✔ Transparent approval workflow</li>
+              <li>✔ Secure & privacy-first design</li>
+            </ul>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 bg-red-600/20 blur-[100px] rounded-full" />
+            <img
+              src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b"
+              className="relative rounded-3xl shadow-2xl"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* High-Impact Statistics Section */}
       <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
@@ -102,7 +170,30 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="py-28 bg-gradient-to-r from-red-600 to-red-700 text-white text-center">
+        <h2 className="text-5xl font-black mb-6">Every Drop Counts</h2>
+        <p className="max-w-2xl mx-auto text-lg mb-10 text-red-100">
+          Join thousands of donors and hospitals saving lives every day.
+        </p>
+
+        <div className="flex justify-center gap-6">
+          <Link
+            href="/donations"
+            className="bg-white text-red-600 px-10 py-4 rounded-full font-bold hover:scale-105 transition"
+          >
+            Donate Blood
+          </Link>
+          <Link
+            href="/request"
+            className="border border-white px-10 py-4 rounded-full font-bold hover:bg-white hover:text-red-600 transition"
+          >
+            Request Blood
+          </Link>
+        </div>
+      </section>
+
       <HorizontalMarquee />
+      <Footer />
     </main>
   );
 }
