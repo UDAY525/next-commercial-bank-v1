@@ -14,6 +14,9 @@ import {
 } from "@/lib/contracts/donation";
 import BloodTransactionsModel from "@/models/BloodTransactions";
 import mongoose from "mongoose";
+import { triggerEmail } from "@/lib/email";
+import { EmailType } from "@/lib/email/types";
+import User from "@/models/User";
 
 // Validation schema for donation
 const donationSchema = z.object({
@@ -45,7 +48,7 @@ export async function GET(req: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -97,7 +100,7 @@ export async function GET(req: NextRequest) {
     const groupWiseBreakdown: GroupWiseBreakdown[] = BLOOD_GROUPS.map(
       (group) => {
         const found = result.groupWise.find(
-          (g: { _id: DonationBloodGroup }) => g._id === group
+          (g: { _id: DonationBloodGroup }) => g._id === group,
         );
 
         return {
@@ -105,7 +108,7 @@ export async function GET(req: NextRequest) {
           quantity: found?.totalQuantity ?? 0,
           count: found?.count ?? 0,
         };
-      }
+      },
     );
 
     const responseData: DonationDashboardData = {
@@ -131,7 +134,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { success: false, message: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -142,6 +145,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const userId = await getUserId();
+    const userMailInfo = await User.findById(userId).select("name email");
 
     console.warn("User Id: ", userId);
 
@@ -154,7 +158,7 @@ export async function POST(req: NextRequest) {
     if (!validation.success) {
       return NextResponse.json(
         { error: validation.error.format() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -172,12 +176,20 @@ export async function POST(req: NextRequest) {
 
     // return NextResponse.json({ body });
 
+    // Trigger mail service
+    triggerEmail(EmailType.DONATION_SUCCESS, {
+      to: userMailInfo?.email ?? "",
+      name: userMailInfo?.name ?? "user.name",
+      bloodGroup: donation.bloodGroup,
+      quantity: donation.quantity,
+    }).catch(console.error);
+
     return NextResponse.json({ donation, success: true });
   } catch (error) {
     console.error("POST /api/donation error:", error);
     return NextResponse.json(
       { error: "Failed to create donation" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

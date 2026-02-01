@@ -64,6 +64,13 @@ export default function Donation() {
     } catch (err) {
       console.error(err);
     }
+    if (user) {
+      form.reset({
+        phone: user.phone ?? "",
+        bloodGroup: user.bloodGroup ?? "O-",
+        quantity: undefined,
+      });
+    }
   }
 
   useEffect(() => {
@@ -224,7 +231,7 @@ export default function Donation() {
                           field.onChange(
                             e.target.value === ""
                               ? undefined
-                              : Number(e.target.value)
+                              : Number(e.target.value),
                           )
                         }
                         className="

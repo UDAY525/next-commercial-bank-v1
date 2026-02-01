@@ -5,6 +5,9 @@ import connectDB from "@/connectDB";
 import { RequestGrantResponse } from "@/lib/contracts/admin/request-grant";
 import BloodTransactionsModel from "@/models/BloodTransactions";
 import mongoose from "mongoose";
+import { triggerEmail } from "@/lib/email";
+import { EmailType } from "@/lib/email/types";
+import User from "@/models/User";
 
 // In Next 16, params is a Promise that must be awaited
 type RouteParams = {
@@ -35,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!userId || !isAdmin) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -43,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!["pending", "granted", "rejected"].includes(nextStatus)) {
     return NextResponse.json(
       { success: false, error: "Invalid status" },
-      { status: 422 }
+      { status: 422 },
     );
   }
 
@@ -51,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!request) {
     return NextResponse.json(
       { success: false, error: "Request not found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
@@ -61,7 +64,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (prevStatus === "granted" && nextStatus === "pending") {
     return NextResponse.json(
       { success: false, error: "Cannot revert granted request to pending" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -90,7 +93,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             quantity: request.quantity,
           },
         ],
-        { session }
+        { session },
       );
 
       request.bloodTransactionCreated = true;
@@ -110,7 +113,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
           quantity: request.quantity,
           type: "OUT",
         },
-        { session }
+        { session },
       );
 
       request.bloodTransactionCreated = false;
@@ -119,6 +122,24 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     await session.commitTransaction();
     session.endSession();
+
+    // Trigger mail service
+    const userMailInfo = await User.findById(request.userId).select(
+      "name email",
+    );
+    triggerEmail(
+      request.status === "granted"
+        ? EmailType.GRANT_APPROVED
+        : request.status === "rejected"
+          ? EmailType.GRANT_REJECTED
+          : EmailType.GRANT_PENDING,
+      {
+        to: userMailInfo?.email ?? "",
+        name: userMailInfo?.name ?? "user.name",
+        bloodGroup: request.bloodGroup,
+        quantity: request.quantity,
+      },
+    ).catch(console.error);
 
     return NextResponse.json({
       success: true,
@@ -134,7 +155,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     console.error(err);
     return NextResponse.json(
       { success: false, error: "Failed to update request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
