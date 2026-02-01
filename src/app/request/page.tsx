@@ -47,7 +47,7 @@ const formSchema = z.object({
     .number()
     .int()
     .min(1, "At least 1 unit")
-    .max(10, "Max 10 units per request"),
+    .max(100, "Max 10 units per request"),
 });
 
 const RequestPage = () => {
@@ -82,6 +82,14 @@ const RequestPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
+    if (user) {
+      form.reset({
+        name: user.name || "",
+        phone: user.phone || "",
+        bloodGroup: user.bloodGroup || "O+",
+        quantity: 1,
+      });
+    }
   };
 
   return (
@@ -236,7 +244,7 @@ const RequestPage = () => {
                           onChange={(e) => {
                             const val = e.target.value;
                             field.onChange(
-                              val === "" ? undefined : Number(val)
+                              val === "" ? undefined : Number(val),
                             );
                           }}
                           value={(field.value as number | undefined) ?? ""}
