@@ -16,6 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useMediaQuery } from "@/hooks/use-mobile";
 
 // --- Configuration ---
 const BLOOD_COLORS: Record<string, string> = {
@@ -56,6 +57,27 @@ export default function UserDonationDashboard() {
         fill: BLOOD_COLORS[item.group],
       }));
   }, [data]);
+  type PieItem = {
+    name: string;
+    value: number;
+    fill: string;
+  };
+  const pieData: PieItem[] = useMemo(() => {
+    if (chartData.length === 0) {
+      return [
+        {
+          name: "No Data",
+          value: 1,
+          fill: "#e5e7eb",
+        },
+      ];
+    }
+
+    return chartData;
+  }, [chartData]);
+  const isLg = useMediaQuery("(min-width: 1024px)");
+
+  console.log(isLg);
 
   if (isLoading)
     return (
@@ -118,7 +140,7 @@ export default function UserDonationDashboard() {
 
         {/* Right Section: The Chart */}
         <div className="relative aspect-square flex items-center justify-center rounded-[4rem] bg-white border border-slate-200 shadow-xl transition-transform hover:scale-[1.01] duration-500">
-          <ChartContainer config={chartConfig} className="w-full h-full p-10">
+          <ChartContainer config={chartConfig} className="w-full h-full p-0">
             <PieChart>
               <ChartTooltip
                 cursor={false}
@@ -130,28 +152,29 @@ export default function UserDonationDashboard() {
                 }
               />
               <Pie
-                data={chartData}
+                data={pieData}
                 dataKey="value"
                 nameKey="name"
-                innerRadius="65%"
-                outerRadius="90%"
-                paddingAngle={5}
+                innerRadius="50%"
+                outerRadius="80%"
+                paddingAngle={chartData.length === 0 ? 0 : 2}
                 strokeWidth={0}
+                label
               >
-                {chartData.map((entry, index: number) => (
+                {pieData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={entry.fill}
-                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                    className="hover:opacity-80 transition-opacity"
                   />
                 ))}
+
                 <Label
                   content={({ viewBox }) => {
                     if (!viewBox || !("cx" in viewBox && "cy" in viewBox))
                       return null;
 
-                    const cx = viewBox.cx;
-                    const cy = viewBox.cy;
+                    const { cx, cy } = viewBox;
 
                     return (
                       <text
@@ -160,21 +183,41 @@ export default function UserDonationDashboard() {
                         textAnchor="middle"
                         dominantBaseline="middle"
                       >
-                        <tspan
-                          x={cx}
-                          dy="-4"
-                          className="fill-slate-900 text-6xl font-black"
-                        >
-                          {stats?.totalDonationsCount}
-                        </tspan>
-
-                        <tspan
-                          x={cx}
-                          dy="32"
-                          className="fill-slate-400 text-sm font-bold uppercase tracking-widest"
-                        >
-                          Donations
-                        </tspan>
+                        {chartData.length === 0 ? (
+                          <>
+                            <tspan
+                              x={cx}
+                              dy="-4"
+                              className="fill-slate-400 text-xl font-bold"
+                            >
+                              No Donations
+                            </tspan>
+                            <tspan
+                              x={cx}
+                              dy="24"
+                              className="fill-slate-400 text-xs uppercase tracking-widest"
+                            >
+                              Yet
+                            </tspan>
+                          </>
+                        ) : (
+                          <>
+                            <tspan
+                              x={cx}
+                              dy={isLg ? -12 : -4}
+                              className="fill-slate-900 text-6xl lg:text-8xl font-black"
+                            >
+                              {stats?.totalDonationsCount}
+                            </tspan>
+                            <tspan
+                              x={cx}
+                              dy={isLg ? 60 : 32}
+                              className="fill-slate-400 text-sm font-bold lg:text-2xl uppercase tracking-widest"
+                            >
+                              Donations
+                            </tspan>
+                          </>
+                        )}
                       </text>
                     );
                   }}

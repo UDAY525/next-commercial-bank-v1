@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function Donation() {
   const user: UserType | null = useGetUserFromDB();
@@ -55,21 +56,36 @@ export default function Donation() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    const donationPromise = fetch("/api/donation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Donation submission failed");
+      }
+      return res.json();
+    });
+
+    toast.promise(donationPromise, {
+      loading: "Submitting donation...",
+      success: "Thank you for your donation 💖",
+      error: "Donation failed. Please try again",
+    });
+
     try {
-      await fetch("/api/donation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-    } catch (err) {
-      console.error(err);
-    }
-    if (user) {
-      form.reset({
-        phone: user.phone ?? "",
-        bloodGroup: user.bloodGroup ?? "O-",
-        quantity: undefined,
-      });
+      await donationPromise;
+
+      if (user) {
+        form.reset({
+          phone: user.phone ?? "",
+          bloodGroup: user.bloodGroup ?? "O-",
+          quantity: undefined,
+        });
+      }
+    } catch {
+      // error toast already handled by toast.promise
     }
   }
 

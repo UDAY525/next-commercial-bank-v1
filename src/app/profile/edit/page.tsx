@@ -34,6 +34,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 export default function ProfileEdit() {
   // async user hook (may be null initially)
@@ -52,22 +53,32 @@ export default function ProfileEdit() {
   type FormValues = z.infer<typeof formSchema>;
 
   async function onSubmit(values: FormValues) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    try {
-      const res = await fetch("/api/user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
+    const updatePromise = fetch("/api/user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    }).then(async (res) => {
       const json = await res.json();
-      console.log("Updated:", json);
-    } catch (err) {
-      console.error("Network error saving profile:", err);
-      alert("Network error");
+
+      if (!res.ok) {
+        throw new Error(json?.message || "Failed to update profile");
+      }
+
+      return json;
+    });
+
+    toast.promise(updatePromise, {
+      loading: "Saving your profile...",
+      success: "Profile updated successfully",
+      error: (err) => err.message || "Something went wrong",
+    });
+
+    try {
+      const result = await updatePromise;
+      console.log("Updated:", result);
+    } catch {
+      // error toast already shown by toast.promise
     }
-    console.log(values);
   }
 
   const form = useForm<FormValues>({
@@ -94,7 +105,15 @@ export default function ProfileEdit() {
   }, [user, form]);
   console.log(user);
   return (
-    <div className="px-4 mb-10">
+    <div className="px-4 py-10 mb-10">
+      {/* Lighter Pulsating Background Accents */}
+      <div className="absolute inset-0 pointer-events-none max-w-full overflow-x-clip">
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-emerald-200/40 blur-[100px] animate-pulse" />
+        <div
+          className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] rounded-full bg-rose-200/40 blur-[100px] animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+      </div>
       <Card className="w-full max-w-xl shadow-2xl mx-auto border-gray-300 mt-10 lg:mt-20">
         <CardHeader>
           <CardTitle>Your Profile Details</CardTitle>
