@@ -4,6 +4,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import Navbar from "@/components/Navbar";
 import ReactQueryProvider from "@/providers/react-query-provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <SessionProvider>
             <Navbar />
             {children}
+            <Toaster position="bottom-right" richColors />
           </SessionProvider>
         </ReactQueryProvider>
       </body>

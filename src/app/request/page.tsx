@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Droplet, Phone, User as UserIcon, Activity } from "lucide-react";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -77,11 +77,27 @@ const RequestPage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     console.log("Request Submitted:", values);
     // Add your mutation here
-    await fetch("/api/request", {
+
+    const requestPromise = fetch("/api/request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
+    }).then(async (res) => {
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Request failed");
+      }
+      return res.json();
     });
+
+    toast.promise(requestPromise, {
+      loading: "Submitting your request...",
+      success: "Your request has been submitted",
+      error: "Request not created, please try again",
+    });
+
+    await requestPromise;
+
     if (user) {
       form.reset({
         name: user.name || "",
