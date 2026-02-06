@@ -87,7 +87,15 @@ export function ProfileMenu() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="default" className="p-1 bg-transparent no-ring">
+        <Button
+          variant="ghost"
+          className="
+    p-1 rounded-full
+    hover:bg-slate-200/60 dark:hover:bg-slate-800/60
+    focus-visible:ring-2 focus-visible:ring-red-500/40
+    transition
+  "
+        >
           <img
             src={user?.profileImage?.toString()}
             alt={session.user.name ?? "avatar"}
@@ -97,8 +105,16 @@ export function ProfileMenu() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-56 mx-4 bg-white/25 border-gray-200 backdrop-blur-xl"
-        align="center"
+        align="start"
+        sideOffset={8}
+        className="
+    w-64
+    rounded-xl
+    border border-slate-200 dark:border-slate-800
+    bg-white dark:bg-slate-900
+    shadow-xl
+    text-slate-900 dark:text-slate-100 mr-4
+  "
       >
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
 
@@ -111,13 +127,23 @@ export function ProfileMenu() {
 
         <DropdownMenuSeparator className="bg-gray-300/50" />
         <DropdownMenuItem asChild>
-          <a href="/profile" className="font-medium">
+          <Link
+            href="/profile"
+            className="
+      flex items-center gap-2
+      rounded-md px-3 py-2
+      font-medium
+      hover:bg-slate-100 dark:hover:bg-slate-800
+      focus:bg-slate-100 dark:focus:bg-slate-800
+      transition
+    "
+          >
             Profile
-          </a>
+          </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <a href="/requests" className="font-medium">
+          <a href="/request" className="font-medium">
             Requests
           </a>
         </DropdownMenuItem>
@@ -125,22 +151,36 @@ export function ProfileMenu() {
         <DropdownMenuSeparator className="bg-gray-400/50" />
         <DropdownMenuItem asChild>
           <Link
-            className="ring-0 outline-0 text-green-600 font-semibold w-full focus-visible:none no-ring"
-            href={"/admin/grant"}
+            href="/admin/grant"
+            className="
+      flex items-center gap-2
+      rounded-md px-3 py-2
+      font-medium
+      text-indigo-600 dark:text-indigo-400
+      hover:bg-indigo-50 dark:hover:bg-indigo-900/30
+      transition
+    "
           >
-            <ShieldUser className="!w-6 !h-6" />
+            <ShieldUser className="h-6 w-6" />
             Admin
           </Link>
         </DropdownMenuItem>
+
         <DropdownMenuItem asChild>
-          <Button
-            variant={"secondary"}
-            className="ring-0 outline-0 text-red-500 font-semibold focus-visible:none no-ring"
+          <button
             onClick={() => signOut({ callbackUrl: "/" })}
+            className="
+      flex items-center gap-2 w-full
+      rounded-md px-3 py-2
+      font-medium
+      text-red-600 dark:text-red-400
+      hover:bg-red-50 dark:hover:bg-red-900/30
+      transition
+    "
           >
-            <LogOut />
+            <LogOut className="h-4 w-4" />
             Log out
-          </Button>
+          </button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

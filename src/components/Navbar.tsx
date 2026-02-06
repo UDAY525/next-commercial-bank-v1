@@ -19,21 +19,25 @@ function NavLink({
   children,
   active,
   onClick,
+  scrolled = false,
 }: {
   href: string;
   children: React.ReactNode;
   active?: boolean;
   onClick?: () => void;
+  scrolled?: boolean;
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
       className={clsx(
-        "px-3 py-2 rounded-md text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2",
+        "px-3 py-2 rounded-md text-sm font-semibold transition-all focus:outline-none",
         active
           ? "bg-red-600 text-white shadow-sm"
-          : "text-gray-800 hover:bg-red-50 hover:text-red-700"
+          : scrolled
+            ? "text-slate-700 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-slate-800 hover:text-red-600"
+            : "text-slate-900 dark:text-white hover:bg-white/20 hover:text-red-600",
       )}
       aria-current={active ? "page" : undefined}
     >
@@ -51,13 +55,29 @@ export default function Navbar() {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
+  const [scrolled, setScrolled] = useState(false);
+
+  React.useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   if (pathname.includes("admin")) return null;
 
   return (
     <header className="fixed w-full top-0 z-50 overflow-hidden">
       <div
-        className="backdrop-blur-sm bg-trnaparent/70 dark:bg-slate-900/60 border-b border-white/10
-                   shadow-sm"
+        className={clsx(
+          "backdrop-blur-xl transition-colors duration-300 border-b",
+          scrolled
+            ? "bg-white/90 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 shadow-sm"
+            : "bg-white/60 dark:bg-slate-950/40 border-transparent",
+        )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -73,7 +93,14 @@ export default function Navbar() {
                 </div>
               </Link>
               {/* Optional tagline on larger screens */}
-              <span className="hidden md:inline-block text-sm text-gray-600 dark:text-gray-300">
+              <span
+                className={clsx(
+                  "hidden md:inline-block text-sm transition-colors",
+                  scrolled
+                    ? "text-slate-600 dark:text-slate-300"
+                    : "text-slate-800 dark:text-slate-200",
+                )}
+              >
                 Donate. Save lives.
               </span>
             </div>
@@ -85,6 +112,7 @@ export default function Navbar() {
                   <NavLink
                     key={item.href}
                     href={item.href}
+                    scrolled={scrolled}
                     active={isActive(item.href)}
                   >
                     {item.label}
@@ -139,7 +167,7 @@ export default function Navbar() {
         <div
           className={clsx(
             "md:hidden transform-gpu transition-all bg-gray-50 relative w-full duration-300 ease-in-out overflow-hidden",
-            open ? "h-screen opacity-100" : "hidden"
+            open ? "h-screen opacity-100" : "hidden",
           )}
         >
           <div className="px-4 pt-2 pb-6 flex flex-col space-y-1">
@@ -148,6 +176,7 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 active={isActive(item.href)}
+                scrolled={scrolled}
                 onClick={() => setOpen(false)}
               >
                 {item.label}
