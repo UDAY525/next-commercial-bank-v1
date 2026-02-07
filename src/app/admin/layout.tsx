@@ -55,14 +55,14 @@ export function AdminSidebar() {
           isOpen ? "md:w-64" : "md:w-20",
           // mobile slide
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-          "w-64"
+          "w-64",
         )}
       >
         {/* Header */}
         <div
           className={cn(
             "flex h-16 items-center px-4 border-b",
-            isOpen || mobileOpen ? "justify-between" : "justify-center"
+            isOpen || mobileOpen ? "justify-between" : "justify-center",
           )}
         >
           <h1
@@ -70,7 +70,7 @@ export function AdminSidebar() {
               "font-bold text-rose-500 overflow-hidden whitespace-nowrap transition-all duration-300 ease-out",
               mobileOpen || isOpen
                 ? "max-w-[200px] translate-x-0 animate-in slide-in-from-left-2 delay-150"
-                : "max-w-0 -translate-x-4 md:pointer-events-none"
+                : "max-w-0 -translate-x-4 md:pointer-events-none",
             )}
           >
             Admin Console
@@ -113,7 +113,7 @@ export function AdminSidebar() {
                   active
                     ? "bg-rose-700 text-white"
                     : "text-slate-600 hover:bg-rose-50 hover:text-rose-600",
-                  mobileOpen || isOpen ? "gap-4" : "justify-center"
+                  mobileOpen || isOpen ? "gap-4" : "justify-center",
                 )}
               >
                 <div className="min-w-6 flex justify-center">{item.icon}</div>
@@ -124,7 +124,7 @@ export function AdminSidebar() {
                     "transition-all duration-300 ease-out",
                     mobileOpen || isOpen
                       ? "max-w-40 translate-x-0 scale-100 delay-150"
-                      : "max-w-0 hidden -translate-x-2 scale-95 md:pointer-events-none"
+                      : "max-w-0 hidden -translate-x-2 scale-95 md:pointer-events-none",
                   )}
                 >
                   {item.name}
@@ -153,7 +153,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="relative flex min-h-screen w-full">
         <AdminSidebar />
-        <main className="flex-1 py-6 overflow-y-scroll max-h-screen md:p-8">
+        <main className="flex-1 py-6 overflow-y-scroll [scrollbar-width:none] max-h-screen md:p-8">
           {children}
         </main>
       </div>
