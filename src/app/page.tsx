@@ -68,6 +68,51 @@ export default async function Home() {
         </div>
       </section>
 
+      {session?.user && (
+        <section className="relative z-30 -mt-10 px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 shadow-xl p-8 md:p-10">
+              {/* Decorative glow */}
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-amber-400/30 blur-[120px]" />
+
+              <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
+                {/* Left content */}
+                <div className="flex-1">
+                  <span className="inline-block mb-3 rounded-full bg-amber-100 text-amber-700 px-4 py-1 text-xs font-bold uppercase tracking-widest">
+                    Action Required
+                  </span>
+
+                  <h3 className="text-3xl font-extrabold text-slate-900 mb-3">
+                    Complete your profile to get started
+                  </h3>
+
+                  <p className="text-slate-600 text-lg max-w-xl">
+                    A complete profile helps us match blood requests faster and
+                    keeps communication smooth during critical moments.
+                  </p>
+
+                  <ul className="mt-4 space-y-2 text-slate-600">
+                    <li>✔ Faster donor matching</li>
+                    <li>✔ Verified contact details</li>
+                    <li>✔ Priority during emergencies</li>
+                  </ul>
+                </div>
+
+                {/* CTA */}
+                <div className="shrink-0">
+                  <Link
+                    href="/profile/edit"
+                    className="inline-flex items-center justify-center rounded-xl bg-amber-600 px-8 py-4 text-white font-bold text-lg shadow-lg hover:bg-amber-700 hover:scale-105 transition"
+                  >
+                    Complete Profile
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="py-24 bg-slate-50 dark:bg-slate-950">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-extrabold mb-4 dark:text-white">

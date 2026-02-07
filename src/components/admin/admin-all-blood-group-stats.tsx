@@ -24,17 +24,8 @@ const BloodGroupDashboard = ({
   data: Record<BloodGroup, BloodGroupInventoryStats>;
 }) => {
   return (
-    <div className="p-6 ">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-10">
-          <h1 className="text-3xl font-black text-slate-800 tracking-tight">
-            Inventory <span className="text-rose-600">Analytics</span>
-          </h1>
-          <p className="text-slate-500 mt-2">
-            Real-time blood stock and donor participation levels.
-          </p>
-        </header>
-
+    <div className="">
+      <div className="w-full">
         {/* The Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {BLOOD_GROUPS.map((group) => {
