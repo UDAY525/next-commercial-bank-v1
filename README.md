@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏦 Next Commercial Bank - Feature Documentation
 
-## Getting Started
+A modern financial management platform built with Next.js, offering users a centralized way to manage multiple bank accounts, track transactions, and transfer funds in real-time.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠 Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application leverages a cutting-edge stack to ensure security, speed, and a premium user experience.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | [Next.js (App Router)](https://nextjs.org/) |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) |
+| **Styling** | [Tailwind CSS](https://tailwindcss.com/) |
+| **UI Components** | [Shadcn/UI](https://ui.shadcn.com/) |
+| **Backend/Auth** | [Appwrite](https://appwrite.io/) |
+| **Banking API** | [Plaid](https://plaid.com/) |
+| **Payments** | [Dwolla](https://www.dwolla.com/) |
+| **Forms/Validation** | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) |
+| **Charts** | [Recharts](https://recharts.org/) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🚀 Key Features
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Unified Dashboard
+* **Total Balance Summary:** Aggregates balances from all connected bank accounts into one view.
+* **Dynamic Visualizations:** Circular charts to represent spending vs. savings.
+* **Real-time Updates:** Instant UI updates when accounts are linked or transactions occur.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Banking & Integration
+* **Connect Multiple Banks:** Securely link various financial institutions via Plaid.
+* **Account Selection:** Seamlessly switch between different accounts to view specific transaction histories.
+* **Verified Accounts:** Uses Dwolla for secure identity verification (KYC).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Transaction Management
+* **Detailed History:** A searchable and filterable list of all bank transactions.
+* **Categorization:** Transactions are automatically categorized (e.g., Food, Transfer, Travel) for better budgeting.
+* **Pagination:** Smooth navigation through large volumes of financial data.
 
-## Deploy on Vercel
+### 4. Fund Transfers
+* **Payment Processing:** Send money to other users via ACH transfers (powered by Dwolla).
+* **Secure Validation:** Multi-step form validation to ensure account details are correct before processing.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 5. Security & Performance
+* **Server Actions:** Utilizes Next.js server-side logic for sensitive operations to keep API keys hidden.
+* **Session Management:** Persistent and secure user sessions via Appwrite.
+* **Fully Responsive:** Optimized for desktop, tablet, and mobile screens.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📁 Project Architecture
+
+> **Note:** The project follows a modular "feature-first" folder structure within the `/app` and `/components` directories to ensure scalability.
+
+* `app/`: Contains the main routing logic and layout definitions.
+* `components/`: Houses reusable UI components (BankCards, Sidebar, TransactionTable).
+* `lib/`: Contains server actions, utility functions, and API configurations.
