@@ -21,6 +21,7 @@ export default function ParallaxHero() {
   return (
     <section
       ref={ref}
+      data-testid="first-fold"
       className="relative h-screen w-full overflow-hidden flex items-center justify-center"
     >
       {/* Background */}

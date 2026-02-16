@@ -9,7 +9,7 @@ export default async function Home() {
 
   return (
     <main className="bg-slate-50 dark:bg-slate-950">
-      <ParallaxHero />
+      <ParallaxHero data-testid="first fold" />
 
       {/* Action Section: Overlapping the Hero */}
       <section className="relative z-20 -mt-20 px-4 pb-20">
@@ -33,6 +33,7 @@ export default async function Home() {
               </p>
               <Link
                 href="/donations"
+                data-testid="donations-cta"
                 className="block text-center border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white py-4 rounded-xl font-bold transition-all"
               >
                 Become a Hero
@@ -59,6 +60,7 @@ export default async function Home() {
               </p>
               <Link
                 href="/request"
+                data-testid="request-cta"
                 className="block text-center border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-4 rounded-xl font-bold transition-all"
               >
                 Request Support
