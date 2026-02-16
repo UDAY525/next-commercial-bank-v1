@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   XCircle,
   ChevronDown,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -86,6 +88,8 @@ export default function RequestManagement() {
     direction: "asc" | "desc";
   } | null>(null);
   const queryClient = useQueryClient();
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 15;
 
   const { data, isFetching, isError } = useQuery({
     queryKey: ["all-user-requests"],
@@ -144,10 +148,10 @@ export default function RequestManagement() {
           return {
             ...old,
             requests: old.requests.map((r) =>
-              r?.id === id ? { ...r, status } : r
+              r?.id === id ? { ...r, status } : r,
             ),
           };
-        }
+        },
       );
 
       return { previous };
@@ -177,25 +181,30 @@ export default function RequestManagement() {
     });
   };
 
-  const filteredRequests = useMemo(() => {
-    let result: BloodRequest[] = requests?.filter(
+  const processedRequests = useMemo(() => {
+    let result = requests.filter(
       (r) =>
         r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.bloodGroup.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.status.toLowerCase().includes(searchQuery.toLowerCase())
+        r.status.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-    if (requests && sortConfig) {
+
+    if (sortConfig) {
       result = [...result].sort((a, b) => {
         const aVal = a[sortConfig.key];
         const bVal = b[sortConfig.key];
-        if (aVal < bVal) return sortConfig.direction === "asc" ? 1 : -1;
-        if (aVal > bVal) return sortConfig.direction === "desc" ? 1 : -1;
-
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       });
     }
     return result;
   }, [requests, sortConfig, searchQuery]);
+  const paginatedRequests = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return processedRequests.slice(start, start + ITEMS_PER_PAGE);
+  }, [processedRequests, currentPage]);
+  const totalPages = Math.ceil(processedRequests.length / ITEMS_PER_PAGE);
 
   if (isFetching) return <div>Loading...</div>;
 
@@ -305,7 +314,7 @@ export default function RequestManagement() {
                 {/* BODY */}
                 <TableBody>
                   <AnimatePresence>
-                    {filteredRequests.map((req, index) => (
+                    {paginatedRequests.map((req, index) => (
                       <motion.tr
                         key={req.id}
                         layout
@@ -415,7 +424,7 @@ export default function RequestManagement() {
                 </TableBody>
               </Table>
 
-              {filteredRequests && filteredRequests.length === 0 && (
+              {processedRequests && processedRequests.length === 0 && (
                 <div className="py-20 text-center text-slate-400">
                   No requests found.
                 </div>
@@ -428,7 +437,7 @@ export default function RequestManagement() {
       {/* ---------------- Mobile Cards ---------------- */}
       <div className="md:hidden space-y-4">
         <AnimatePresence>
-          {filteredRequests.map((req) => (
+          {paginatedRequests.map((req) => (
             <motion.div
               key={req.id}
               initial={{ opacity: 0, y: 8 }}
@@ -490,6 +499,47 @@ export default function RequestManagement() {
             </motion.div>
           ))}
         </AnimatePresence>
+      </div>
+      {/* Pagination Controls */}
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/50 p-4 rounded-2xl border border-slate-200/50">
+        <p className="text-sm text-slate-500">
+          Showing{" "}
+          <span className="font-semibold text-slate-900">
+            {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+          </span>{" "}
+          to{" "}
+          <span className="font-semibold text-slate-900">
+            {Math.min(currentPage * ITEMS_PER_PAGE, processedRequests.length)}
+          </span>{" "}
+          of{" "}
+          <span className="font-semibold text-slate-900">
+            {processedRequests.length}
+          </span>{" "}
+          entries
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-xl"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-sm font-medium px-4">
+            Page {currentPage} of {totalPages || 1}
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 rounded-xl"
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
